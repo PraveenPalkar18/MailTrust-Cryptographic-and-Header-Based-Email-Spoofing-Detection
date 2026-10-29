@@ -1,0 +1,24 @@
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=example.com;
+ i=@example.com; q=dns/txt; s=cns2026; t=1793019143; h=from : to :
+ subject : date : message-id : content-type : from;
+ bh=0zBMp+S3qwQAkNo7Y6zTgg4X7WYLArbCamQVSQcw3lQ=;
+ b=sZ+pl5+bi0440aTKnrM953IALNLY2u+673sO0IFlP3cNE3RZJOCVLMw+ga72uY64mhkN8
+ 6ecenV2bGCrbqV64Km5R2+dkXjOQa4vIryPwtgnj6gIBjeKbLzu9GsVAxTRb7nmzO5TDhtP
+ wnxZ0kIsGncMlS/8tVSqee9USSQyDYur1juXBtPMRw2dbbuTvEZNGkQaNsQVi3qVOOuN7jU
+ oA0tqEZyERBqN8eWFmtlG5LiQPfLBNRobcQCRl9qRm2y2a3d5cej3AAJz2vKF+25R2HuS5m
+ QTA3H/G30cNbcRtcbIWKfdbQepDsb7me4roFFoX2xQLUaZyaLCWJ4hxG/WOw==
+From: security-alerts@example.com
+To: user@recipient.org
+Subject: Monthly Security Audit Notification
+Date: Mon, 26 Oct 2026 10:00:00 +0000
+Message-ID: <audit-2026-1026@example.com>
+Return-Path: <security-alerts@example.com>
+Content-Type: text/plain; charset=utf-8
+
+Hello Admin,
+
+This is a routine monthly security notification from Example Corp.
+Your system integrity checks have passed with no vulnerabilities detected.
+
+Regards,
+Security Operations Center

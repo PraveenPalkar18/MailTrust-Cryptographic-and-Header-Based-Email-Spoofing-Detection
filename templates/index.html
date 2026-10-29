@@ -1,0 +1,279 @@
+{% extends "base.html" %}
+
+{% block title %}MailTrust — Email Authenticity & Spoofing Detection{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column gap-5">
+
+    <!-- Hero Section -->
+    <section class="text-center py-4 py-lg-5">
+        <div class="badge bg-light text-dark border px-3 py-1 mb-3 rounded-pill fs-8 fw-semibold shadow-xs">
+            <i class="bi bi-shield-check text-primary me-1"></i> Deterministic CNS Email Authenticity Engine
+        </div>
+        <h1 class="hero-header mb-3">Know which emails you can trust.</h1>
+        <p class="hero-subtitle mb-4">
+            Analyze email authentication, detect suspicious sender domains, and understand potential phishing risks using cryptographic DKIM verification, SPF evaluation, and DMARC alignment.
+        </p>
+        <div class="d-flex justify-content-center align-items-center">
+            <a href="#analyze-section" class="btn btn-primary-saas px-4 py-2 fs-7">
+                <i class="bi bi-shield-shaded me-1"></i> Analyze an Email
+            </a>
+        </div>
+        
+        <!-- Trust Indicators Strip -->
+        <div class="d-flex flex-wrap justify-content-center gap-4 mt-4 pt-2 text-muted fs-8 font-monospace">
+            <span><i class="bi bi-check2 text-success me-1"></i>Zero AI / Pure Deterministic</span>
+            <span><i class="bi bi-check2 text-success me-1"></i>RFC 6376, 7208 &amp; 7489</span>
+            <span><i class="bi bi-check2 text-success me-1"></i>In-Memory Local Analysis</span>
+        </div>
+    </section>
+
+    <!-- Main Analysis Card Section -->
+    <section id="analyze-section" class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card-saas p-4 p-md-5">
+                <div class="mb-4 text-center">
+                    <h2 class="h4 fw-bold text-dark mb-1">Submit an Email for Inspection</h2>
+                    <p class="text-secondary small mb-0">Choose either file upload or raw source paste to evaluate cryptographic signatures and sender legitimacy.</p>
+                </div>
+
+                <form action="{{ url_for('analyze') }}" method="POST" enctype="multipart/form-data" id="analysisForm">
+                    
+                    <!-- Method Selector Tabs -->
+                    <ul class="nav nav-pills input-tabs-clean justify-content-center gap-2 mb-4 bg-light p-1 rounded-3 border" id="inputMethodTab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active d-flex align-items-center gap-2" id="upload-tab" data-bs-toggle="pill" data-bs-target="#upload-pane" type="button" role="tab">
+                                <i class="bi bi-file-earmark-arrow-up"></i> Upload .EML File
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link d-flex align-items-center gap-2" id="paste-tab" data-bs-toggle="pill" data-bs-target="#paste-pane" type="button" role="tab">
+                                <i class="bi bi-file-earmark-text"></i> Paste Email Source
+                            </button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content mb-4" id="inputMethodTabContent">
+                        <!-- Option A: File Upload Dropzone -->
+                        <div class="tab-pane fade show active" id="upload-pane" role="tabpanel">
+                            <div class="dropzone-clean p-5 text-center" id="dropZone">
+                                <div id="dropzoneEmptyState">
+                                    <div class="d-inline-flex align-items-center justify-content-center bg-light text-primary rounded-circle p-3 mb-3" style="width: 56px; height: 56px;">
+                                        <i class="bi bi-cloud-arrow-up fs-3"></i>
+                                    </div>
+                                    <h6 class="text-dark fw-bold mb-1">Drop your <code>.eml</code> file here, or browse</h6>
+                                    <p class="text-muted fs-8 mb-3">Accepts standard RFC 5322 .eml or .txt files (Maximum 10 MB)</p>
+                                    <input type="file" name="email_file" id="emailFileInput" class="d-none" accept=".eml,.txt,.msg">
+                                    <button type="button" class="btn btn-outline-saas btn-sm px-3" onclick="document.getElementById('emailFileInput').click();">
+                                        <i class="bi bi-folder2-open me-1"></i> Choose File
+                                    </button>
+                                </div>
+                                <div id="dropzoneSelectedState" class="d-none py-3">
+                                    <div class="d-inline-flex align-items-center justify-content-center bg-success-subtle text-success rounded-circle p-3 mb-2" style="width: 48px; height: 48px;">
+                                        <i class="bi bi-file-earmark-check fs-4"></i>
+                                    </div>
+                                    <h6 class="text-dark fw-bold mb-1 font-monospace" id="selectedFileName">filename.eml</h6>
+                                    <span class="text-muted fs-8 d-block mb-3" id="selectedFileSize">0 KB</span>
+                                    <button type="button" class="btn btn-sm btn-outline-danger px-3" id="removeFileBtn">
+                                        <i class="bi bi-trash3 me-1"></i> Remove File
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Option B: Paste Raw Email Source -->
+                        <div class="tab-pane fade" id="paste-pane" role="tabpanel">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <label for="rawEmailText" class="form-label text-dark fw-semibold small mb-0">Raw RFC 5322 Email Source:</label>
+                                <div class="d-flex align-items-center gap-2">
+                                    <button type="button" class="btn btn-link btn-sm text-decoration-none text-primary p-0 fs-8" data-bs-toggle="modal" data-bs-target="#sourceHelpModal">
+                                        <i class="bi bi-question-circle me-1"></i> Where do I find email source?
+                                    </button>
+                                    <span class="text-muted fs-8">•</span>
+                                    <button type="button" class="btn btn-link btn-sm text-decoration-none text-muted p-0 fs-8" id="clearTextBtn">
+                                        Clear
+                                    </button>
+                                </div>
+                            </div>
+                            <textarea name="raw_email_text" id="rawEmailText" rows="9" class="form-control-saas font-monospace w-100 fs-8" placeholder="Paste the complete raw email headers and message body here...&#10;&#10;Example:&#10;From: alerts@service.com&#10;To: recipient@company.org&#10;Subject: Security Notification&#10;Date: Mon, 26 Oct 2026 12:00:00 +0000&#10;DKIM-Signature: v=1; a=rsa-sha256; ..."></textarea>
+                            <div class="d-flex justify-content-between align-items-center mt-1 text-muted fs-9">
+                                <span>Includes message headers and payload</span>
+                                <span id="charCount">0 characters</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Optional SMTP Parameters for SPF Accordion -->
+                    <div class="accordion accordion-clean mb-4 border rounded" id="spfContextAccordion">
+                        <div class="accordion-item border-0">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed py-2 text-secondary fs-8" type="button" data-bs-toggle="collapse" data-bs-target="#spfContextCollapse">
+                                    <i class="bi bi-hdd-network me-2 text-primary"></i>
+                                    Optional: Provide SMTP Context for Offline SPF Evaluation
+                                </button>
+                            </h2>
+                            <div id="spfContextCollapse" class="accordion-collapse collapse" data-bs-parent="#spfContextAccordion">
+                                <div class="accordion-body pt-2 text-secondary fs-8 border-top">
+                                    <p class="small text-muted mb-3">
+                                        Static <code>.eml</code> files do not authentically guarantee the original sending IP or envelope sender (<code>MAIL FROM</code>). You may specify them below to execute an offline contextual SPF evaluation.
+                                    </p>
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label text-dark fw-medium small mb-1">Connecting Client IP Address:</label>
+                                            <input type="text" name="client_ip" class="form-control-saas form-control-sm font-monospace w-100" placeholder="e.g. 209.85.220.41 or 2a00:1450::1">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label text-dark fw-medium small mb-1">Envelope Sender (MAIL FROM):</label>
+                                            <input type="text" name="envelope_sender" class="form-control-saas form-control-sm font-monospace w-100" placeholder="e.g. bounce@sender-domain.com">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Primary Action Button -->
+                    <div class="text-center">
+                        <button type="submit" id="analyzeBtn" class="btn btn-primary-saas px-5 py-2 fs-7" disabled>
+                            <span id="btnText"><i class="bi bi-search me-2"></i>Analyze Email</span>
+                            <span id="btnSpinner" class="spinner-border spinner-border-sm me-2 d-none" role="status"></span>
+                        </button>
+                        <p class="text-muted fs-9 mt-2 mb-0">Select an .eml file or paste email text to begin analysis.</p>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pre-Built Educational Test Scenarios -->
+    <section>
+        <div class="d-flex justify-content-between align-items-end mb-3">
+            <div>
+                <h3 class="h5 fw-bold text-dark mb-1">Educational CNS Scenarios</h3>
+                <p class="text-muted small mb-0">Click any pre-generated email scenario to observe real cryptographic verification and spoofing detection:</p>
+            </div>
+            <a href="{{ url_for('methodology') }}" class="text-decoration-none text-primary fs-8 fw-semibold">
+                View CNS Methodology <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+
+        <div class="row g-3">
+            {% for s in samples %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="card-saas h-100 p-3 d-flex flex-column justify-content-between">
+                        <div>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="status-pill status-pill-{{ s.tag_class }} font-monospace fs-9">
+                                    {{ s.tag }}
+                                </span>
+                                <span class="text-muted font-monospace fs-9">.EML</span>
+                            </div>
+                            <h6 class="fw-bold text-dark mb-1 fs-7">{{ s.title }}</h6>
+                            <p class="text-secondary fs-8 mb-3">{{ s.desc }}</p>
+                        </div>
+                        <a href="{{ url_for('load_sample', sample_name=s.filename) }}" class="btn btn-outline-saas btn-sm w-100 text-center">
+                            Run Analysis <i class="bi bi-chevron-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Scan History Mini-Preview -->
+    {% if recent_analyses %}
+        <section class="card-saas p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-clock-history text-secondary"></i>
+                    <h5 class="fw-bold text-dark mb-0 fs-7">Recent Analyses (This Session)</h5>
+                </div>
+                <a href="{{ url_for('history') }}" class="text-decoration-none text-primary fs-8 fw-semibold">
+                    View All ({{ recent_analyses|length }}) <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-saas mb-0">
+                    <thead>
+                        <tr>
+                            <th>Subject</th>
+                            <th>Sender</th>
+                            <th>Verdict</th>
+                            <th>Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in recent_analyses[:3] %}
+                            <tr>
+                                <td class="fw-medium text-dark">{{ item.subject }}</td>
+                                <td class="font-monospace text-muted fs-8">{{ item.from }}</td>
+                                <td>
+                                    <span class="status-pill status-pill-{{ item.badge_class }} fs-9 font-monospace">
+                                        {{ item.verdict }}
+                                    </span>
+                                </td>
+                                <td class="text-muted fs-8">{{ item.timestamp }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    {% endif %}
+
+</div>
+
+<!-- Help Modal: Where do I find email source? -->
+<div class="modal fade" id="sourceHelpModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content card-saas border-0">
+            <div class="modal-header border-bottom p-3">
+                <h6 class="modal-title fw-bold text-dark"><i class="bi bi-question-circle text-primary me-2"></i>How to Export Raw Email Source</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4 text-secondary fs-8">
+                <ul class="nav nav-tabs border-bottom mb-3" id="helpTabs" role="tablist">
+                    <li class="nav-item">
+                        <button class="nav-link active text-dark" data-bs-toggle="tab" data-bs-target="#gmail-help">Gmail</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link text-dark" data-bs-toggle="tab" data-bs-target="#outlook-help">Outlook</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link text-dark" data-bs-toggle="tab" data-bs-target="#apple-help">Apple Mail</button>
+                    </li>
+                </ul>
+                <div class="tab-content">
+                    <div class="tab-pane fade show active" id="gmail-help">
+                        <ol class="ps-3 mb-0">
+                            <li class="mb-2">Open the email in Gmail on your web browser.</li>
+                            <li class="mb-2">Click the <strong>three dots (More)</strong> in the top-right corner of the email message.</li>
+                            <li class="mb-2">Select <strong>"Show original"</strong>.</li>
+                            <li class="mb-0">Click <strong>"Download Original"</strong> to get the <code>.eml</code> file, or click <strong>"Copy to clipboard"</strong> to paste it here.</li>
+                        </ol>
+                    </div>
+                    <div class="tab-pane fade" id="outlook-help">
+                        <ol class="ps-3 mb-0">
+                            <li class="mb-2">Open the email in Outlook (web or desktop).</li>
+                            <li class="mb-2">Click the <strong>three dots (...)</strong> in the message action bar.</li>
+                            <li class="mb-2">Go to <strong>View &rarr; View message source</strong>.</li>
+                            <li class="mb-0">Select all text (Ctrl+A), copy it, and paste it into MailTrust.</li>
+                        </ol>
+                    </div>
+                    <div class="tab-pane fade" id="apple-help">
+                        <ol class="ps-3 mb-0">
+                            <li class="mb-2">Select the email in Apple Mail.</li>
+                            <li class="mb-2">Choose <strong>View &rarr; Message &rarr; Raw Source</strong> from the top menu bar.</li>
+                            <li class="mb-0">Copy the source text or drag the email directly to your desktop to save as an <code>.eml</code> file.</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-top p-2 px-3">
+                <button type="button" class="btn btn-sm btn-primary-saas px-3" data-bs-dismiss="modal">Got it</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

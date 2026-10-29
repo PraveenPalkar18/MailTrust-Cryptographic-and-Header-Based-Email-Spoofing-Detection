@@ -1,0 +1,7 @@
+Flask>=3.0.0
+dkimpy>=1.1.5
+dnspython>=2.6.1
+pytest>=8.0.0
+tldextract>=5.1.2
+beautifulsoup4>=4.12.3
+cryptography>=42.0.5

@@ -1,0 +1,16 @@
+From: "PayPal Security Alert" <security@attacker-phish.net>
+Reply-To: support@attacker-phish.net
+To: victim@example.org
+Subject: Urgent: Verify your PayPal account credentials immediately
+Date: Mon, 26 Oct 2026 11:15:00 +0000
+Message-ID: <spoof-001@attacker-phish.net>
+Return-Path: <bounces@attacker-phish.net>
+Content-Type: text/html; charset=utf-8
+
+<html><body>
+<p>Dear Customer,</p>
+<p>We detected an unauthorized login to your PayPal account. Immediate action required!</p>
+<p>Your account will be suspended within 24 hours if you fail to verify your password and 2FA code.</p>
+<p><a href="http://192.168.1.50/paypal-login">https://www.paypal.com/signin</a></p>
+<p>Thank you,<br>PayPal Support</p>
+</body></html>

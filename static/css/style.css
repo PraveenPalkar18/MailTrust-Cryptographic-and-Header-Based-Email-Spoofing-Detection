@@ -1,0 +1,393 @@
+/* MailTrust — Modern Security SaaS Design System */
+
+:root {
+    --bg-page: #f8fafc;
+    --bg-card: #ffffff;
+    --bg-subtle: #f1f5f9;
+    --bg-hover: #f8fafc;
+    
+    --border-color: #e2e8f0;
+    --border-subtle: #cbd5e1;
+    --border-focus: #2563eb;
+    
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #64748b;
+    --text-light: #94a3b8;
+    
+    --brand-navy: #0f172a;
+    --brand-blue: #2563eb;
+    --brand-blue-hover: #1d4ed8;
+    --brand-blue-subtle: #eff6ff;
+    
+    --success: #16a34a;
+    --success-bg: #f0fdf4;
+    --success-border: #bbf7d0;
+    --success-text: #15803d;
+    
+    --warning: #d97706;
+    --warning-bg: #fffbeb;
+    --warning-border: #fde68a;
+    --warning-text: #b45309;
+    
+    --danger: #dc2626;
+    --danger-bg: #fef2f2;
+    --danger-border: #fecaca;
+    --danger-text: #b91c1c;
+    
+    --neutral-badge-bg: #f1f5f9;
+    --neutral-badge-text: #475569;
+    --neutral-badge-border: #cbd5e1;
+    
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-mono: 'JetBrains Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --shadow-subtle: 0 1px 3px 0 rgba(15, 23, 42, 0.05), 0 1px 2px -1px rgba(15, 23, 42, 0.05);
+    --shadow-card: 0 1px 3px 0 rgba(15, 23, 42, 0.08);
+}
+
+body {
+    background-color: var(--bg-page) !important;
+    font-family: var(--font-sans);
+    color: var(--text-primary);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Typography Utilities */
+.font-monospace {
+    font-family: var(--font-mono) !important;
+}
+
+.fs-7 { font-size: 0.925rem; }
+.fs-8 { font-size: 0.825rem; }
+.fs-9 { font-size: 0.75rem; }
+
+.tracking-tight {
+    letter-spacing: -0.02em;
+}
+
+/* Navbar */
+.navbar-clean {
+    background-color: #ffffff;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.navbar-brand-name {
+    font-weight: 700;
+    font-size: 1.15rem;
+    color: var(--brand-navy);
+    letter-spacing: -0.025em;
+}
+
+.navbar-brand-name span {
+    color: var(--brand-blue);
+}
+
+.nav-link-saas {
+    font-weight: 500;
+    color: var(--text-secondary);
+    padding: 0.5rem 0.85rem !important;
+    border-radius: var(--radius-sm);
+    transition: all 0.15s ease-in-out;
+}
+
+.nav-link-saas:hover {
+    color: var(--brand-navy);
+    background-color: var(--bg-subtle);
+}
+
+.nav-link-saas.active {
+    color: var(--brand-blue) !important;
+    background-color: var(--brand-blue-subtle);
+    font-weight: 600;
+}
+
+/* Subtle Privacy Banner */
+.privacy-notice-bar {
+    background-color: #ffffff;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.825rem;
+    color: var(--text-secondary);
+}
+
+/* Modern Clean Card Component */
+.card-saas {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-subtle);
+}
+
+.card-header-clean {
+    background-color: #ffffff;
+    border-bottom: 1px solid var(--border-color);
+    padding: 1rem 1.25rem;
+}
+
+/* Hero Section */
+.hero-header {
+    font-size: 2.25rem;
+    font-weight: 800;
+    color: var(--brand-navy);
+    line-height: 1.2;
+    letter-spacing: -0.03em;
+}
+
+.hero-subtitle {
+    font-size: 1.05rem;
+    color: var(--text-secondary);
+    max-width: 680px;
+    margin: 0 auto;
+}
+
+/* Input Method Tabs */
+.input-tabs-clean .nav-link {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    border: 1px solid transparent;
+    padding: 0.6rem 1.25rem;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    transition: all 0.15s ease;
+}
+
+.input-tabs-clean .nav-link:hover {
+    color: var(--brand-navy);
+    background-color: var(--bg-subtle);
+}
+
+.input-tabs-clean .nav-link.active {
+    background-color: #ffffff !important;
+    color: var(--brand-blue) !important;
+    border-color: var(--border-color) !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* Drag-and-Drop Area */
+.dropzone-clean {
+    background-color: #ffffff;
+    border: 2px dashed #cbd5e1;
+    border-radius: var(--radius-md);
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
+}
+
+.dropzone-clean:hover, .dropzone-clean.dragover {
+    border-color: var(--brand-blue);
+    background-color: var(--brand-blue-subtle);
+}
+
+/* Form Controls */
+.form-control-saas {
+    background-color: #ffffff;
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    border-radius: var(--radius-sm);
+    font-size: 0.875rem;
+    padding: 0.625rem 0.85rem;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.form-control-saas:focus {
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    outline: none;
+}
+
+/* Action Buttons */
+.btn-primary-saas {
+    background-color: var(--brand-navy);
+    color: #ffffff;
+    border: 1px solid var(--brand-navy);
+    font-weight: 600;
+    border-radius: var(--radius-sm);
+    padding: 0.625rem 1.25rem;
+    transition: all 0.15s ease;
+}
+
+.btn-primary-saas:hover:not(:disabled) {
+    background-color: #1e293b;
+    border-color: #1e293b;
+    color: #ffffff;
+}
+
+.btn-primary-saas:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn-outline-saas {
+    background-color: #ffffff;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+    font-weight: 500;
+    border-radius: var(--radius-sm);
+    padding: 0.45rem 0.85rem;
+    transition: all 0.15s ease;
+}
+
+.btn-outline-saas:hover {
+    background-color: var(--bg-subtle);
+    color: var(--text-primary);
+    border-color: var(--border-subtle);
+}
+
+/* Accessible Status Badges */
+.status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.25rem 0.65rem;
+    border-radius: 9999px;
+    font-size: 0.775rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+}
+
+.status-pill-success {
+    background-color: var(--success-bg);
+    color: var(--success-text);
+    border: 1px solid var(--success-border);
+}
+
+.status-pill-warning {
+    background-color: var(--warning-bg);
+    color: var(--warning-text);
+    border: 1px solid var(--warning-border);
+}
+
+.status-pill-danger {
+    background-color: var(--danger-bg);
+    color: var(--danger-text);
+    border: 1px solid var(--danger-border);
+}
+
+.status-pill-neutral {
+    background-color: var(--neutral-badge-bg);
+    color: var(--neutral-badge-text);
+    border: 1px solid var(--neutral-badge-border);
+}
+
+/* Verdict Top Hero Banner */
+.verdict-hero {
+    background-color: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+}
+
+.verdict-hero.border-success { border-left: 6px solid var(--success) !important; }
+.verdict-hero.border-warning { border-left: 6px solid var(--warning) !important; }
+.verdict-hero.border-danger { border-left: 6px solid var(--danger) !important; }
+.verdict-hero.border-secondary { border-left: 6px solid #64748b !important; }
+
+/* Authentication Triad Cards */
+.auth-status-card {
+    background-color: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 1.15rem;
+    transition: border-color 0.15s ease;
+}
+
+.auth-status-card:hover {
+    border-color: #cbd5e1;
+}
+
+/* Findings List Cards */
+.finding-item {
+    background-color: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 1rem 1.25rem;
+}
+
+.finding-item.finding-critical {
+    border-left: 4px solid var(--danger);
+}
+
+.finding-item.finding-high {
+    border-left: 4px solid var(--danger);
+}
+
+.finding-item.finding-medium {
+    border-left: 4px solid var(--warning);
+}
+
+.finding-item.finding-low {
+    border-left: 4px solid #64748b;
+}
+
+/* Technical Details Accordion */
+.accordion-clean .accordion-button {
+    background-color: #ffffff;
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    font-weight: 600;
+    padding: 0.85rem 1.25rem;
+}
+
+.accordion-clean .accordion-button:not(.collapsed) {
+    background-color: var(--bg-subtle);
+    color: var(--brand-navy);
+    box-shadow: none;
+}
+
+.accordion-clean .accordion-body {
+    background-color: #ffffff;
+    padding: 1.25rem;
+    font-size: 0.85rem;
+}
+
+/* Raw Headers Code Viewer */
+.code-viewer-saas {
+    background-color: #0f172a;
+    color: #e2e8f0;
+    border-radius: var(--radius-sm);
+    padding: 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    line-height: 1.45;
+    max-height: 380px;
+    overflow-y: auto;
+}
+
+/* Responsive Table */
+.table-saas {
+    --bs-table-bg: transparent;
+    color: var(--text-primary);
+    font-size: 0.85rem;
+}
+
+.table-saas th {
+    font-weight: 600;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border-color);
+    padding: 0.65rem 0.85rem;
+}
+
+.table-saas td {
+    border-bottom: 1px solid var(--border-color);
+    padding: 0.65rem 0.85rem;
+    vertical-align: middle;
+}
+
+/* Step Badges for Authentication Lab */
+.lab-step-num {
+    width: 28px;
+    height: 28px;
+    background-color: var(--brand-navy);
+    color: #ffffff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.8rem;
+    flex-shrink: 0;
+}

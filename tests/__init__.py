@@ -1,0 +1,3 @@
+"""
+MailTrust Automated Test Suite
+"""

@@ -1,0 +1,17 @@
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=attacker-mail.com;
+ i=@attacker-mail.com; q=dns/txt; s=relay; t=1793019143; h=from : to :
+ subject : date : message-id : content-type : from;
+ bh=IkX66aEeLCgcvBkqWCrX3bdolpaH8kd/qHh9byLu1Wg=;
+ b=S705Lf1okWZ5H7eply7axRh9GkWXOkewYBSpe7hoRz/aSHVG/zzDVH7tVC8+EEMw2pSuA
+ X2JYrwv7QQZFKJwY5qovP/a8NOFltQGO5szw3X9pUXFZ5MqLLqRKAzLaDA21HjzYi6L/q18
+ OezBmH/dz++1CJFQdIqDYyC3YUnyUs3go1XYt28Xe1nJ0VHngTfjlD6A+m4C01Fw9+b1FCm
+ V8mdrvqi5fX6+P5LjtgX2EESLgZwVYx1RoUYP4KXmKMAXHNPtVnOGegLlJHUrW3vLVNJDve
+ XLlD3ZDxPgnwhEUBFuntitnATxop7wXqVbLy03n2SIppewsf/R9ouHSHJzbA==
+From: ceo@trusted-bank.com
+To: finance@victim.org
+Subject: Confidential Wire Transfer Request
+Date: Mon, 26 Oct 2026 12:30:00 +0000
+Message-ID: <bank-transfer-99@trusted-bank.com>
+Content-Type: text/plain; charset=utf-8
+
+Please process a confidential wire transfer of $45,000 to the overseas account today.

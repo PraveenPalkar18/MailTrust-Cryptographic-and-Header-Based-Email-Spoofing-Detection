@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}MailTrust — Session Scan History{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column gap-4">
+
+    <!-- Page Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+        <div>
+            <h1 class="h4 fw-bold text-dark mb-1">Session Scan History</h1>
+            <p class="text-secondary small mb-0">Record of email authenticity analyses performed during this browser session.</p>
+        </div>
+        {% if history %}
+            <form action="{{ url_for('clear_history') }}" method="POST" onsubmit="return confirm('Clear scan history for this session?');">
+                <button type="submit" class="btn btn-outline-saas btn-sm text-danger">
+                    <i class="bi bi-trash3 me-1"></i> Clear History
+                </button>
+            </form>
+        {% endif %}
+    </div>
+
+    <!-- Privacy Notice -->
+    <div class="alert alert-light border p-3 fs-8 text-secondary d-flex align-items-center gap-2 mb-0">
+        <i class="bi bi-shield-check text-primary fs-5"></i>
+        <div>
+            <strong>Privacy Protection:</strong> Scan history is maintained only in your local session memory. Raw email bodies and personal data are never stored in a persistent database.
+        </div>
+    </div>
+
+    {% if history %}
+        <!-- Search and Filter Bar -->
+        <div class="card-saas p-3">
+            <div class="row g-2 align-items-center">
+                <div class="col-md-6">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                        <input type="text" id="historySearchInput" class="form-control-saas form-control-sm border-start-0 w-75" placeholder="Search by subject or sender...">
+                    </div>
+                </div>
+                <div class="col-md-6 d-flex justify-content-md-end gap-2">
+                    <select id="verdictFilter" class="form-select form-select-sm w-auto fs-8">
+                        <option value="all">All Verdicts</option>
+                        <option value="AUTHENTICATION VERIFIED">Verified</option>
+                        <option value="SUSPICIOUS">Suspicious</option>
+                        <option value="HIGH RISK">High Risk</option>
+                        <option value="INCONCLUSIVE">Inconclusive</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- History Table -->
+        <div class="card-saas overflow-hidden">
+            <div class="table-responsive">
+                <table class="table table-saas table-hover mb-0" id="historyTable">
+                    <thead>
+                        <tr>
+                            <th>Subject</th>
+                            <th>Sender Address</th>
+                            <th>Verdict</th>
+                            <th>Risk Score</th>
+                            <th>Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in history %}
+                            <tr class="history-row" data-verdict="{{ item.verdict }}">
+                                <td class="fw-semibold text-dark search-target">{{ item.subject }}</td>
+                                <td class="font-monospace text-muted fs-8 search-target">{{ item.from }}</td>
+                                <td>
+                                    <span class="status-pill status-pill-{{ item.badge_class }} fs-9 font-monospace">
+                                        {{ item.verdict }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="fw-bold font-monospace fs-8 text-{{ item.badge_class }}">{{ item.risk_score }}/100</span>
+                                </td>
+                                <td class="text-muted fs-8">{{ item.timestamp }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% else %}
+        <!-- Clean Empty State -->
+        <div class="card-saas p-5 text-center">
+            <div class="d-inline-flex align-items-center justify-content-center bg-light text-muted rounded-circle p-4 mb-3" style="width: 64px; height: 64px;">
+                <i class="bi bi-inbox fs-2"></i>
+            </div>
+            <h5 class="fw-bold text-dark mb-1">No scan history recorded</h5>
+            <p class="text-secondary fs-8 mb-4">Emails analyzed during your session will appear here for easy comparison.</p>
+            <div>
+                <a href="{{ url_for('index') }}#analyze-section" class="btn btn-primary-saas btn-sm px-4">
+                    <i class="bi bi-shield-shaded me-1"></i> Analyze an Email
+                </a>
+            </div>
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const searchInput = document.getElementById('historySearchInput');
+    const verdictFilter = document.getElementById('verdictFilter');
+    const rows = document.querySelectorAll('.history-row');
+
+    function filterTable() {
+        const query = (searchInput ? searchInput.value : '').toLowerCase().trim();
+        const selectedVerdict = (verdictFilter ? verdictFilter.value : 'all');
+
+        rows.forEach(row => {
+            const verdict = row.getAttribute('data-verdict');
+            const targets = row.querySelectorAll('.search-target');
+            let textMatch = false;
+            targets.forEach(t => {
+                if (t.textContent.toLowerCase().includes(query)) textMatch = true;
+            });
+
+            const verdictMatch = (selectedVerdict === 'all' || verdict === selectedVerdict);
+            row.style.display = (textMatch && verdictMatch) ? '' : 'none';
+        });
+    }
+
+    if (searchInput) searchInput.addEventListener('input', filterTable);
+    if (verdictFilter) verdictFilter.addEventListener('change', filterTable);
+});
+</script>
+{% endblock %}

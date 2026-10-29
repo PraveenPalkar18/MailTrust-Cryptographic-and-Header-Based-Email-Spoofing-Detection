@@ -1,0 +1,99 @@
+Return-Path: <madhu@inspireleap.in>
+Received: from mail-sor-f65.google.com (mail-sor-f65.google.com. [209.85.220.65])
+        by mx.google.com with SMTPS id 00721157ae682-8b166c93794sor13414237b3.1.2026.10.24.05.36.43
+        for <02fe23bcs053@kletech.ac.in>
+        (Google Transport Security);
+        Sat, 24 Oct 2026 05:36:44 -0700 (PDT)
+Received-SPF: pass (google.com: domain of madhu@inspireleap.in designates 209.85.220.65 as permitted sender) client-ip=209.85.220.65;
+Authentication-Results: mx.google.com;
+       dkim=permerror (no key for signature) header.i=@inspireleap.in header.s=google header.b=JTH7XPAH;
+       arc=pass (i=1);
+       spf=pass (google.com: domain of madhu@inspireleap.in designates 209.85.220.65 as permitted sender) smtp.mailfrom=madhu@inspireleap.in;
+       dara=neutral header.i=@kletech.ac.in
+ARC-Seal: i=1; a=rsa-sha256; t=1792845403; cv=none;
+        d=google.com; s=arc-20260327;
+        b=NALkNa0nl4n2qZ613jKdKSYqpJ+ugdI+1DLx0U/Ya/kZVgczf/KI7YoL0rDAyTpiMe
+         Y57L6Vb2xAnIBl4YmCxgaRIul6TJ2yqxGH+7EeLuUfqU5u4xDp9iIa+12Dnw9hn15QM0
+         V15hers3fOCtDQfPz2jqX/Fd+Q6YLhUp938EelZEQ7MRf34fC1R8ebKJm4A/IFNavcEj
+         0m0poBEOqsnlXxckDHxbUTwliU3CRDHdJ0szK/gutk+UqKDB6ZmB4GsQUJil5vI6DqYl
+         2Hjo2rRUNZ3GB8QryBYr01EPq1+Pw2+o4FkFgzZJB8KnkhtI+w86gfvqVAfEVSFBep3b
+         27pA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=to:subject:message-id:date:from:mime-version:dkim-signature;
+        bh=yHwdtn9WyYXQxEYzCXYwfAsToeToWsbFQzWGn4Oulyo=;
+        fh=tJbd5VmSWazQM24C7AeKkhDjt1JkJabKwVz8r0Q4jlg=;
+        b=Bei1HchnlM2QfhOBjOe+J+1BbWoYqH83Hjf+z5O487J3T2wx+h8Estd4sWSjJEEjA/
+         gPqX1Nn3GCMsxcTZmN+bi9nGWH5J9Ai+dCZZh4AOU3JghZViHcFwrsRppJ3dt5WC7GuZ
+         dFOYdnNbM+KLyU4mSyGpvq/sVwBd2XFa/iGMgvRsKDxIocV0twLYD/6PnWqORi1U5wmx
+         le+mwms9piHHKyuW8tEuM73dityLRpAl7vs41EUMj+4CtK6jyymjHTL6k8YU+MLPknEj
+         JSFIWzXKUMGFr5jTPpcxXbtzq32sDgh8gzIr/vP4oD+w8ZDa4oUzjZxY831+2JclwzgO
+         /ecA==;
+        darn=kletech.ac.in
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=inspireleap.in; s=google; t=1792845403; x=1793450203; darn=kletech.ac.in;
+        h=content-type:to:subject:message-id:date:from:mime-version:from:to
+         :cc:subject:date:message-id:reply-to:content-type;
+        bh=yHwdtn9WyYXQxEYzCXYwfAsToeToWsbFQzWGn4Oulyo=;
+        b=JTH7XPAH9so8pAaSz0cDGd3uuOCSpZMHufu4ooLnNHBdD8wAIYaghzrz8JLtcq7f9n
+         PyquAgdINY+EkB9kicG32E11I4KLrosouxpUHTtZMID826s2QlgYGDNR+BPiPA0+oeTb
+         XdeCHpg07FHEBXvd1iEI2VvwbTTHKp2svnSWc=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1792845403; x=1793450203;
+        h=content-type:to:subject:message-id:date:from:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=yHwdtn9WyYXQxEYzCXYwfAsToeToWsbFQzWGn4Oulyo=;
+        b=x5JadN4EDRu35ElG2Ci/AUlzWXTsnxbfbTy0s2BKZSxaBmgSZFBAw5f9yFB2t0PKVo
+         UICXweK/tMtrWjybHSoQiqYks4xqyGeLKiitOOb/L4LbT5I01ObpRmMm1ceH0/QHlhcZ
+         BBRCdQDiZJRHDUZpWMH54kNsz+FKqIXHlyzJOvhO6oiPjB0Ffjjubj2QvvKj8Zi9GtVC
+         bI6CGUFDC2M8YuS0V8SfdmEMj0nt1h91kaD4Rkf4KjQqtMQZZItl1qbMSW0ZP4u1zTJ6
+         VdWH4n+zGCakBd/9gdJgvYPqPSixpNlJI206DIxpTeAMddLemmg8V4H/TiSH2FDXl1/9
+         sc1w==
+MIME-Version: 1.0
+From: madhu v <madhu@inspireleap.in>
+Date: Sat, 24 Oct 2026 18:06:33 +0530
+Message-ID: <CADeF_1234567890@mail.gmail.com>
+Subject: TCS NQT Career Readiness Program | Training & Stipend-Based Internship
+To: 02fe23bcs053@kletech.ac.in
+Content-Type: text/plain; charset="UTF-8"
+
+Dear Students and Recent Graduates,
+
+Applications are now officially open for the upcoming Industry-Oriented Technical Training & Internship Program. Designed for undergraduate and postgraduate students of all academic years and recent graduates, this 3-month online initiative focuses on core programming logic, practical project execution, and targeted preparation for national-level corporate assessments (including TCS NQT and CodeVita).
+
+Application & Registration Procedure
+Interested candidates are invited to complete the formal registration form. Input the designated program reference code to finalize submission.
+
+- Reference Code: ION30
+- Application Link: https://forms.gle/gHcG8qiGDfLw7PYt7
+
+Program Details
+- Duration: 3 Months (2 Months Training + 1 Month Project Internship)
+- Delivery Mode: 100% Online (Work from Home / LMS Platform)
+- Eligibility: All academic years and streams, as well as recent graduates.
+
+Structured Curriculum Roadmap
+Month 1: Technical Foundations & Assessment Readiness
+- Mentor-Led Instruction: Interactive weekday sessions focusing on core programming, data structures, and analytical problem-solving.
+- Assessment Framework: Continuous progress evaluations aligned with standard national corporate hiring benchmarks.
+
+Month 2: Practical Application & Career Readiness
+- Hands-on Projects: Development of individual and team-based technical assignments with industry-standard documentation.
+- Career Development: Resume optimization modules and automated mock technical interview practice.
+
+Month 3: Project-Based Internship
+- Corporate Integration: Transition into real-world technical workflows, task execution, and client deliverable management.
+- Performance Incentives: Evaluation-based stipend opportunities available upon meeting project deliverables and quality metrics.
+
+Professional Credentials & Career Outcomes
+- Verified Certification: Course Completion Certificate and Internship Certificate upon meeting program requirements.
+- Special Recognition: Performance-backed Letter of Recommendation (LOR) for top candidates.
+
+Support Desk
+For curriculum details, fee structures, or scheduling inquiries, please reach out to the Operations Team:
+- Contact Numbers: 6281695201 / 9908215552
+
+Sincerely,
+TCS TechSupport Team
+Industry Skill Development Division
