@@ -1,13 +1,28 @@
 """
 MailTrust Database Engine & Session Management
-Thread-safe SQLite engine with WAL journaling and foreign key integrity.
+Thread-safe engine supporting SQLite local session caching with automated
+real-time synchronization and permanent NoSQL persistence in MongoDB Atlas.
 """
 
 import os
 from contextlib import contextmanager
 from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker, scoped_session
-from models import Base
+from models import (
+    Base, User, SessionRecord, RecoveryCode, AnalysisRecord,
+    AuditLog, AuditCheckpoint, AppSetting
+)
+from mongo_db import (
+    mongo_save_user, mongo_delete_user,
+    mongo_save_session, mongo_delete_session,
+    mongo_save_recovery_code,
+    mongo_save_analysis,
+    mongo_save_audit_log,
+    mongo_save_checkpoint,
+    mongo_save_setting,
+    init_mongodb,
+    sync_from_mongodb_to_sqlite
+)
 
 # Database path defaults to local workspace storage
 DEFAULT_DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "mailtrust.db")
@@ -32,9 +47,60 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
 SessionLocal = scoped_session(sessionmaker(autocommit=False, autoflush=False, expire_on_commit=False, bind=engine))
 
 
+# ---------------------------------------------------------------------------
+# MongoDB Real-Time Synchronization Listeners
+# ---------------------------------------------------------------------------
+
+@event.listens_for(User, "after_insert")
+@event.listens_for(User, "after_update")
+def on_user_saved(mapper, connection, target):
+    mongo_save_user(target)
+
+@event.listens_for(User, "after_delete")
+def on_user_deleted(mapper, connection, target):
+    mongo_delete_user(target)
+
+@event.listens_for(SessionRecord, "after_insert")
+@event.listens_for(SessionRecord, "after_update")
+def on_session_saved(mapper, connection, target):
+    mongo_save_session(target)
+
+@event.listens_for(SessionRecord, "after_delete")
+def on_session_deleted(mapper, connection, target):
+    mongo_delete_session(target)
+
+@event.listens_for(RecoveryCode, "after_insert")
+@event.listens_for(RecoveryCode, "after_update")
+def on_recovery_saved(mapper, connection, target):
+    mongo_save_recovery_code(target)
+
+@event.listens_for(AnalysisRecord, "after_insert")
+@event.listens_for(AnalysisRecord, "after_update")
+def on_analysis_saved(mapper, connection, target):
+    mongo_save_analysis(target)
+
+@event.listens_for(AuditLog, "after_insert")
+@event.listens_for(AuditLog, "after_update")
+def on_audit_saved(mapper, connection, target):
+    mongo_save_audit_log(target)
+
+@event.listens_for(AuditCheckpoint, "after_insert")
+@event.listens_for(AuditCheckpoint, "after_update")
+def on_checkpoint_saved(mapper, connection, target):
+    mongo_save_checkpoint(target)
+
+@event.listens_for(AppSetting, "after_insert")
+@event.listens_for(AppSetting, "after_update")
+def on_setting_saved(mapper, connection, target):
+    mongo_save_setting(target)
+
+
 def init_db():
-    """Create all relational tables if they do not exist."""
+    """Create local relational schema, connect to MongoDB Atlas, and sync state."""
     Base.metadata.create_all(bind=engine)
+    init_mongodb()
+    with get_db() as db:
+        sync_from_mongodb_to_sqlite(db)
 
 
 @contextmanager

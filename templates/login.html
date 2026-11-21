@@ -14,6 +14,22 @@
                 <p class="text-muted fs-8 mb-0">Enter your credentials to access authenticated forensic capabilities.</p>
             </div>
             <div class="card-body p-4">
+                <!-- Default Admin Quick Access Alert -->
+                <div class="alert alert-primary border-primary-subtle p-3 mb-3 d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <span class="badge bg-primary">Admin Access</span>
+                            <span class="fs-8 fw-bold text-dark">Default Administrator Account</span>
+                        </div>
+                        <div class="fs-9 font-monospace text-secondary">
+                            User: <code>admin</code> &bull; Pass: <code>AdminPassword#2026</code>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-primary fw-semibold" onclick="document.getElementById('identifier').value='admin'; document.getElementById('password').value='AdminPassword#2026';">
+                        Quick Fill
+                    </button>
+                </div>
+
                 <form method="POST" action="{{ url_for('login') }}">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                     {% if request.args.get('next') %}

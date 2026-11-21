@@ -10,3 +10,4 @@ PyOTP>=2.12.1
 qrcode>=8.2
 SQLAlchemy>=2.1.9
 asn1crypto>=1.5.1
+pymongo>=4.6.0

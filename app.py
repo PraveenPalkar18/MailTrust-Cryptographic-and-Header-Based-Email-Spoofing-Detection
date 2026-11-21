@@ -1095,6 +1095,9 @@ def logout():
 @login_required
 def user_dashboard():
     """User account dashboard displaying recent personal scans and security status."""
+    if g.current_user and g.current_user.role == "ADMIN":
+        return redirect(url_for("admin_dashboard"))
+
     with get_db() as db:
         user_scans = db.query(AnalysisRecord).filter_by(user_id=g.current_user.id).order_by(AnalysisRecord.created_at.desc()).limit(20).all()
         total_scans = db.query(AnalysisRecord).filter_by(user_id=g.current_user.id).count()

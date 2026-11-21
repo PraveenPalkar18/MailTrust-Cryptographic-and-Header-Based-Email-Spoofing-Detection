@@ -81,6 +81,13 @@ class Config:
     DATABASE_PATH = os.path.join(BASE_DIR, "mailtrust.db")
     DATABASE_URL = os.environ.get("DATABASE_URL", f"sqlite:///{DATABASE_PATH}")
 
+    # MongoDB Atlas Database Persistence (Default permanent cloud store)
+    MONGODB_URI = os.environ.get(
+        "MONGODB_URI",
+        "mongodb+srv://praveen:prvn2005@cluster0.jpq3ozt.mongodb.net/luxury_travel?retryWrites=true&w=majority&appName=Cluster0"
+    )
+    MONGODB_DB_NAME = os.environ.get("MONGODB_DB_NAME", "luxury_travel")
+
     # Session & Cookie Security
     SESSION_COOKIE_NAME = "mailtrust_session"
     SESSION_COOKIE_HTTPONLY = True
