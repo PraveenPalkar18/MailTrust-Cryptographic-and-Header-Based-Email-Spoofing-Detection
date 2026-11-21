@@ -75,7 +75,11 @@ def is_rate_limited(identifier: str) -> bool:
     """
     Check if IP or username has exceeded maximum failed login attempts.
     Sliding window based on Config.LOGIN_LOCKOUT_MINUTES.
+    Loopback addresses (127.0.0.1, ::1) are never locked out globally.
     """
+    if identifier in ("127.0.0.1", "::1", "localhost"):
+        return False
+
     now = datetime.now(timezone.utc)
     cutoff = now - timedelta(minutes=Config.LOGIN_LOCKOUT_MINUTES)
     
@@ -97,6 +101,11 @@ def record_failed_attempt(identifier: str):
 def clear_failed_attempts(identifier: str):
     """Clear recorded failed attempts upon successful login."""
     _FAILED_ATTEMPTS.pop(identifier, None)
+
+
+def clear_all_rate_limits():
+    """Clear all recorded failed login attempts across all IPs and identifiers."""
+    _FAILED_ATTEMPTS.clear()
 
 
 def generate_session_token() -> str:

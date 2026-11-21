@@ -5,6 +5,22 @@ Cryptography and Network Security (CNS) Email Authenticity System
 
 import os
 
+# Automatically load .env file into os.environ if present
+_env_path = os.path.join(os.path.dirname(__file__), ".env")
+if os.path.exists(_env_path):
+    try:
+        with open(_env_path, "r", encoding="utf-8") as _f:
+            for _line in _f:
+                _line = _line.strip()
+                if _line and not _line.startswith("#") and "=" in _line:
+                    _k, _v = _line.split("=", 1)
+                    _k = _k.strip()
+                    _v = _v.strip().strip('"').strip("'")
+                    if _k not in os.environ:
+                        os.environ[_k] = _v
+    except Exception:
+        pass
+
 class Config:
     SECRET_KEY = os.environ.get("SECRET_KEY", "mailtrust-cns-security-key-2026")
     
