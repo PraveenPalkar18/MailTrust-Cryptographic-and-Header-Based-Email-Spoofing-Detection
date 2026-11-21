@@ -7,30 +7,35 @@
     <div class="col-12 col-md-8 col-lg-5">
         <div class="card card-enterprise shadow-sm border-light-subtle">
             <div class="card-enterprise-header text-center py-3 bg-white border-bottom">
-                <div class="brand-mark mx-auto mb-2" style="width: 42px; height: 42px; font-size: 1.25rem;">
+                <div class="brand-mark mx-auto mb-2" style="width: 44px; height: 44px; font-size: 1.3rem;">
                     <i class="bi bi-shield-lock"></i>
                 </div>
-                <h5 class="fw-bold text-dark mb-1">Sign In to MailTrust</h5>
-                <p class="text-muted fs-8 mb-0">Enter your credentials to access authenticated forensic capabilities.</p>
+                <h5 class="fw-bold text-dark mb-1">MailTrust CNS Security</h5>
+                <p class="text-muted fs-8 mb-0">Know which emails you can trust. Deterministic cryptographic verification and email security.</p>
             </div>
             <div class="card-body p-4">
                 <!-- Default Admin Quick Access Alert -->
-                <div class="alert alert-primary border-primary-subtle p-3 mb-3 d-flex align-items-center justify-content-between">
-                    <div>
-                        <div class="d-flex align-items-center gap-2 mb-1">
+                <div class="alert alert-primary border-primary-subtle p-3 mb-3">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <div class="d-flex align-items-center gap-2">
                             <span class="badge bg-primary">Admin Access</span>
                             <span class="fs-8 fw-bold text-dark">Default Administrator Account</span>
                         </div>
-                        <div class="fs-9 font-monospace text-secondary">
-                            User: <code>admin</code> &bull; Pass: <code>AdminPassword#2026</code>
+                        <div class="d-flex gap-1">
+                            <button type="button" class="btn btn-sm btn-outline-primary fw-semibold fs-9" onclick="document.getElementById('identifier').value='admin'; document.getElementById('password').value='AdminPassword#2026';">
+                                Quick Fill
+                            </button>
+                            <button type="button" class="btn btn-sm btn-primary fw-semibold fs-9" onclick="document.getElementById('identifier').value='admin'; document.getElementById('password').value='AdminPassword#2026'; document.getElementById('loginForm').submit();">
+                                <i class="bi bi-box-arrow-in-right"></i> 1-Click Sign In
+                            </button>
                         </div>
                     </div>
-                    <button type="button" class="btn btn-sm btn-outline-primary fw-semibold" onclick="document.getElementById('identifier').value='admin'; document.getElementById('password').value='AdminPassword#2026';">
-                        Quick Fill
-                    </button>
+                    <div class="fs-9 font-monospace text-secondary">
+                        User: <code>admin</code> &bull; Pass: <code>AdminPassword#2026</code>
+                    </div>
                 </div>
 
-                <form method="POST" action="{{ url_for('login') }}">
+                <form method="POST" action="{{ url_for('login') }}" id="loginForm">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                     {% if request.args.get('next') %}
                         <input type="hidden" name="next" value="{{ request.args.get('next') }}">
@@ -56,20 +61,37 @@
 
                     <div class="d-grid mt-4">
                         <button type="submit" class="btn btn-primary btn-enterprise py-2">
-                            <i class="bi bi-box-arrow-in-right me-1"></i> Sign In
+                            <i class="bi bi-box-arrow-in-right me-1"></i> Sign In to Dashboard
                         </button>
                     </div>
                 </form>
 
+                <div class="d-flex align-items-center my-3 text-secondary">
+                    <hr class="flex-grow-1 my-0">
+                    <span class="px-2 fs-9 text-uppercase text-muted fw-semibold">Or continue as guest</span>
+                    <hr class="flex-grow-1 my-0">
+                </div>
+
+                <!-- Guest Mode Button -->
+                <div>
+                    <a href="{{ url_for('user_dashboard') }}" class="btn btn-outline-secondary w-100 py-2 fs-8 fw-semibold">
+                        <i class="bi bi-person-slash me-1 text-warning"></i> Continue as Guest (Stateless Mode)
+                    </a>
+                </div>
+
                 <div class="alert alert-light border mt-4 p-3 fs-9 text-muted d-flex align-items-start gap-2">
-                    <i class="bi bi-info-circle text-primary mt-1"></i>
+                    <i class="bi bi-shield-check text-primary mt-1"></i>
                     <div>
-                        <strong>CNS Security Notice:</strong> Passwords are verified via Argon2id with server-side rate-limiting and session token rotation.
+                        <strong>CNS Security Notice:</strong> Passwords are verified via Argon2id with rate limiting and session token rotation. Multi-Factor Authentication (TOTP RFC 6238) supported.
                     </div>
                 </div>
 
                 <div class="text-center mt-3 fs-8 text-secondary">
                     Don't have an account? <a href="{{ url_for('register') }}" class="fw-semibold text-primary">Register here</a>
+                </div>
+
+                <div class="text-center mt-3 pt-3 border-top fs-9 text-muted">
+                    <i class="bi bi-mortarboard me-1 text-primary"></i> Educational CNS Scenarios &bull; <a href="{{ url_for('workbench') }}" class="text-decoration-none">Direct Message Inspection Workbench &rarr;</a>
                 </div>
             </div>
         </div>

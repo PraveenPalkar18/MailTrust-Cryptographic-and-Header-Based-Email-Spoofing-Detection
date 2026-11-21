@@ -51,8 +51,8 @@
                         <a href="{{ url_for('account') }}" class="btn btn-sm btn-outline-secondary">
                             <i class="bi bi-gear me-1"></i> Account Settings
                         </a>
-                        <a href="{{ url_for('index') }}" class="btn btn-sm btn-enterprise">
-                            <i class="bi bi-plus-lg me-1"></i> New Analysis
+                        <a href="{{ url_for('workbench') }}" class="btn btn-sm btn-enterprise">
+                            <i class="bi bi-shield-check me-1"></i> Start Email Scan (Workbench)
                         </a>
                     </div>
                 {% endif %}
@@ -91,7 +91,7 @@
                             <button type="submit" class="btn btn-primary btn-enterprise px-4">
                                 <i class="bi bi-shield-check me-1"></i> Analyze Statelessly
                             </button>
-                            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary fs-8">
+                            <a href="{{ url_for('workbench') }}" class="btn btn-outline-secondary fs-8">
                                 Go to Full Workbench <i class="bi bi-arrow-right ms-1"></i>
                             </a>
                         </div>
@@ -204,7 +204,7 @@
                         <div class="text-center py-5 text-secondary">
                             <i class="bi bi-inbox fs-2 text-muted mb-2 d-block"></i>
                             <p class="mb-2">No email forensic scans recorded under your account yet.</p>
-                            <a href="{{ url_for('index') }}" class="btn btn-sm btn-primary">Run First Analysis</a>
+                            <a href="{{ url_for('workbench') }}" class="btn btn-sm btn-primary">Run First Analysis on Workbench</a>
                         </div>
                     {% endif %}
                 </div>

@@ -37,11 +37,6 @@
             <div class="collapse navbar-collapse" id="navbarMain">
                 <ul class="navbar-nav mx-auto mb-2 mb-lg-0 gap-lg-2">
                     <li class="nav-item">
-                        <a class="nav-link nav-link-enterprise {% if request.endpoint == 'index' %}active{% endif %}" href="{{ url_for('index') }}">
-                            Workbench
-                        </a>
-                    </li>
-                    <li class="nav-item">
                         {% if current_user and current_user.role == 'ADMIN' %}
                             <a class="nav-link nav-link-enterprise {% if 'admin' in request.endpoint %}active{% endif %}" href="{{ url_for('admin_dashboard') }}">
                                 <i class="bi bi-shield-lock me-1 text-primary"></i> Admin Dashboard
@@ -51,6 +46,11 @@
                                 <i class="bi bi-speedometer2 me-1"></i> Dashboard
                             </a>
                         {% endif %}
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-enterprise {% if request.endpoint in ('workbench', 'index') %}active{% endif %}" href="{{ url_for('workbench') }}">
+                            <i class="bi bi-search me-1"></i> Email Scan (Workbench)
+                        </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link nav-link-enterprise {% if request.endpoint == 'verify_report' %}active{% endif %}" href="{{ url_for('verify_report') }}">
@@ -100,7 +100,7 @@
                             Register
                         </a>
                     {% endif %}
-                    <a href="{{ url_for('index') }}#analyze-section" class="btn btn-sm btn-enterprise ms-1">
+                    <a href="{{ url_for('workbench') }}" class="btn btn-sm btn-enterprise ms-1">
                         <i class="bi bi-plus-lg"></i> Inspect Email
                     </a>
                 </div>

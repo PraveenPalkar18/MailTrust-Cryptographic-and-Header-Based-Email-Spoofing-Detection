@@ -17,12 +17,15 @@
                         <p class="text-secondary fs-8 mb-0">System administration, RBAC authorization, and cryptographic hash chain auditing.</p>
                     </div>
                 </div>
-                <div class="d-flex gap-2">
+                <div class="d-flex gap-2 flex-wrap">
                     <a href="{{ url_for('admin_users') }}" class="btn btn-sm btn-outline-primary">
                         <i class="bi bi-people me-1"></i> Manage Users
                     </a>
                     <a href="{{ url_for('admin_audit') }}" class="btn btn-sm btn-outline-secondary">
                         <i class="bi bi-journal-code me-1"></i> Audit Logs
+                    </a>
+                    <a href="{{ url_for('workbench') }}" class="btn btn-sm btn-enterprise">
+                        <i class="bi bi-shield-check me-1"></i> Start Email Scan (Workbench)
                     </a>
                 </div>
             </div>

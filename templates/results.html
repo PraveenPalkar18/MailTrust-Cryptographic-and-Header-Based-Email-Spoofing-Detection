@@ -7,9 +7,14 @@
 
     <!-- Top Navigation & Action Toolbar -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
-        <a href="{{ url_for('index') }}" class="btn-enterprise-outline text-decoration-none">
-            <i class="bi bi-arrow-left"></i> Analyze Another Message
-        </a>
+        <div class="d-flex align-items-center gap-2">
+            <a href="{{ url_for('workbench') }}" class="btn-enterprise-outline text-decoration-none">
+                <i class="bi bi-arrow-left"></i> Analyze Another Message
+            </a>
+            <a href="{{ url_for('user_dashboard') }}" class="btn-enterprise-outline text-decoration-none">
+                <i class="bi bi-speedometer2"></i> Dashboard
+            </a>
+        </div>
         <div class="d-flex align-items-center gap-2">
             <span class="text-muted font-monospace fs-9 d-none d-sm-inline">RFC 5322 &bull; CNS Audit Report</span>
             <button onclick="window.print()" class="btn-enterprise-outline">
