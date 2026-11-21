@@ -11,6 +11,11 @@ from .dmarc_analyzer import evaluate_dmarc, DMARCResult
 from .domain_analyzer import analyze_domains, DomainAnalysisResult
 from .phishing_rules import inspect_phishing_indicators, PhishingIndicatorsResult
 from .risk_engine import compute_risk_verdict, RiskAssessmentResult
+from .crypto_hygiene import analyze_dkim_crypto_hygiene, CryptoHygieneResult
+from .smime_analyzer import verify_smime_signatures, SMIMEResult
+from .evidence_report import create_signed_forensic_report, verify_signed_forensic_report
+from .header_provenance import analyze_header_provenance, HeaderProvenanceResult
+from .attachment_inspector import inspect_attachment, inspect_all_attachments
 
 __all__ = [
     "parse_raw_email",
@@ -27,4 +32,14 @@ __all__ = [
     "PhishingIndicatorsResult",
     "compute_risk_verdict",
     "RiskAssessmentResult",
+    "analyze_dkim_crypto_hygiene",
+    "CryptoHygieneResult",
+    "verify_smime_signatures",
+    "SMIMEResult",
+    "create_signed_forensic_report",
+    "verify_signed_forensic_report",
+    "analyze_header_provenance",
+    "HeaderProvenanceResult",
+    "inspect_attachment",
+    "inspect_all_attachments",
 ]

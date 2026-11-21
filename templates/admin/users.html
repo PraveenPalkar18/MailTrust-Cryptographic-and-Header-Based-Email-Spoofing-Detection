@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}User Management — Admin Console{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-12">
+        <div class="card card-enterprise">
+            <div class="card-enterprise-header d-flex justify-content-between align-items-center py-3 px-4 border-bottom">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-people text-primary"></i>
+                    <h5 class="fw-bold text-dark mb-0">Platform User Directory &amp; RBAC Control</h5>
+                </div>
+                <span class="badge bg-light text-secondary border font-monospace">{{ users | length }} Registered Users</span>
+            </div>
+
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0 fs-8">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-4">User</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                                <th>MFA</th>
+                                <th>Created</th>
+                                <th>Last Active</th>
+                                <th class="pe-4 text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for u in users %}
+                                <tr>
+                                    <td class="ps-4">
+                                        <div class="fw-bold text-dark">{{ u.username }}</div>
+                                        <div class="text-muted fs-9">{{ u.email }}</div>
+                                    </td>
+                                    <td>
+                                        <form method="POST" action="{{ url_for('admin_users') }}" class="d-inline-flex align-items-center gap-1">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                            <input type="hidden" name="action" value="change_role">
+                                            <input type="hidden" name="user_id" value="{{ u.id }}">
+                                            <select name="role" class="form-select form-select-sm py-0 px-2 fs-9 font-monospace" onchange="this.form.submit()">
+                                                <option value="USER" {% if u.role == 'USER' %}selected{% endif %}>USER</option>
+                                                <option value="ADMIN" {% if u.role == 'ADMIN' %}selected{% endif %}>ADMIN</option>
+                                            </select>
+                                        </form>
+                                    </td>
+                                    <td>
+                                        {% if u.is_locked %}
+                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Locked</span>
+                                        {% elif not u.is_active %}
+                                            <span class="badge bg-secondary-subtle text-secondary border">Inactive</span>
+                                        {% else %}
+                                            <span class="badge bg-success-subtle text-success border border-success-subtle">Active</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if u.totp_enabled %}
+                                            <span class="badge bg-success-subtle text-success border border-success-subtle"><i class="bi bi-shield-check"></i> Enabled</span>
+                                        {% else %}
+                                            <span class="badge bg-light text-muted border">None</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-secondary font-monospace fs-9">
+                                        {{ u.created_at.strftime('%Y-%m-%d') }}
+                                    </td>
+                                    <td class="text-secondary font-monospace fs-9">
+                                        {{ u.last_login_at.strftime('%Y-%m-%d %H:%M') if u.last_login_at else 'Never' }}
+                                    </td>
+                                    <td class="pe-4 text-end">
+                                        <div class="d-inline-flex gap-1">
+                                            <!-- Toggle Lock Button -->
+                                            <form method="POST" action="{{ url_for('admin_users') }}">
+                                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                                <input type="hidden" name="action" value="toggle_lock">
+                                                <input type="hidden" name="user_id" value="{{ u.id }}">
+                                                <button type="submit" class="btn btn-sm {% if u.is_locked %}btn-outline-success{% else %}btn-outline-warning{% endif %} py-0 px-2 fs-9" title="{% if u.is_locked %}Unlock user{% else %}Lock user{% endif %}">
+                                                    <i class="bi {% if u.is_locked %}bi-unlock{% else %}bi-lock{% endif %}"></i>
+                                                </button>
+                                            </form>
+
+                                            <!-- Delete User Button -->
+                                            <form method="POST" action="{{ url_for('admin_users') }}" onsubmit="return confirm('Are you sure you want to permanently delete user {{ u.username }}?');">
+                                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                                <input type="hidden" name="action" value="delete_user">
+                                                <input type="hidden" name="user_id" value="{{ u.id }}">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2 fs-9" title="Delete user">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card-footer bg-light border-top py-2 px-4 fs-9 text-muted d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-shield-exclamation text-warning me-1"></i>Security Guardrail: Actions that would demote, lock, or delete the last remaining administrator are automatically blocked.</span>
+                <span>Role-Based Access Control Active</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

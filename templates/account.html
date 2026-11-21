@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}Account Security — MailTrust{% endblock %}
+
+{% block content %}
+<div class="row g-4 justify-content-center">
+    <div class="col-12 col-md-8">
+        <!-- Account Overview Card -->
+        <div class="card card-enterprise mb-4">
+            <div class="card-enterprise-header py-3 px-4 border-bottom">
+                <h6 class="fw-bold text-dark mb-0"><i class="bi bi-person me-2"></i>Account Profile</h6>
+            </div>
+            <div class="card-body p-4">
+                <div class="row g-3 fs-8">
+                    <div class="col-sm-6">
+                        <label class="text-muted fw-semibold">Username</label>
+                        <div class="fw-bold text-dark fs-7">{{ user.username }}</div>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="text-muted fw-semibold">Email Address</label>
+                        <div class="fw-bold text-dark fs-7">{{ user.email }}</div>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="text-muted fw-semibold">Assigned Role</label>
+                        <div>
+                            <span class="badge {% if user.role == 'ADMIN' %}bg-primary{% else %}bg-secondary{% endif %}">{{ user.role }}</span>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="text-muted fw-semibold">Member Since</label>
+                        <div class="text-secondary font-monospace">{{ user.created_at.strftime('%Y-%m-%d') }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Multi-Factor Authentication Card -->
+        <div class="card card-enterprise mb-4">
+            <div class="card-enterprise-header py-3 px-4 border-bottom d-flex justify-content-between align-items-center">
+                <h6 class="fw-bold text-dark mb-0"><i class="bi bi-shield-check me-2"></i>Two-Factor Authentication (RFC 6238 TOTP)</h6>
+                {% if user.totp_enabled %}
+                    <span class="badge bg-success-subtle text-success border border-success-subtle">Active</span>
+                {% else %}
+                    <span class="badge bg-warning-subtle text-warning border border-warning-subtle">Disabled</span>
+                {% endif %}
+            </div>
+            <div class="card-body p-4">
+                <p class="fs-8 text-secondary mb-3">
+                    Two-Factor Authentication adds an additional cryptographic layer of security by requiring a 6-digit code from your authenticator device at each login.
+                </p>
+                {% if user.totp_enabled %}
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="text-success fs-8"><i class="bi bi-check-circle-fill me-1"></i>TOTP is currently protecting this account.</span>
+                        <a href="{{ url_for('mfa_setup') }}" class="btn btn-sm btn-outline-secondary">
+                            Re-provision Authenticator
+                        </a>
+                    </div>
+                {% else %}
+                    <a href="{{ url_for('mfa_setup') }}" class="btn btn-sm btn-primary btn-enterprise">
+                        <i class="bi bi-qr-code me-1"></i> Set Up Authenticator App
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Change Password Card -->
+        <div class="card card-enterprise">
+            <div class="card-enterprise-header py-3 px-4 border-bottom">
+                <h6 class="fw-bold text-dark mb-0"><i class="bi bi-key me-2"></i>Change Password</h6>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('account') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <input type="hidden" name="action" value="change_password">
+
+                    <div class="mb-3">
+                        <label for="current_password" class="form-label fs-8 fw-semibold text-secondary">Current Password</label>
+                        <input type="password" class="form-control" id="current_password" name="current_password" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="new_password" class="form-label fs-8 fw-semibold text-secondary">New Password</label>
+                        <input type="password" class="form-control" id="new_password" name="new_password" required>
+                        <div class="form-text fs-9 text-muted">Minimum 10 characters with upper/lowercase, number, and special symbol.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="confirm_password" class="form-label fs-8 fw-semibold text-secondary">Confirm New Password</label>
+                        <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-enterprise">
+                        Update Password
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

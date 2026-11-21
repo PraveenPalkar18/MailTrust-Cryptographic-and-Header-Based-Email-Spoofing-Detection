@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}System Settings — Admin Console{% endblock %}
+
+{% block content %}
+<div class="row g-4 justify-content-center">
+    <div class="col-12 col-md-8">
+        <div class="card card-enterprise">
+            <div class="card-enterprise-header py-3 px-4 border-bottom">
+                <h6 class="fw-bold text-dark mb-0"><i class="bi bi-sliders me-2"></i>Security &amp; Retention Configuration</h6>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('admin_settings') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+                    <div class="mb-3">
+                        <label for="analysis_retention_days" class="form-label fs-8 fw-semibold text-secondary">
+                            Forensics Analysis Metadata Retention (Days)
+                        </label>
+                        <input type="number" class="form-control" id="analysis_retention_days" name="analysis_retention_days" value="{{ settings.get('analysis_retention_days', config.ANALYSIS_RETENTION_DAYS) }}" min="1" max="365" required>
+                        <div class="form-text fs-9 text-muted">Analysis fingerprints and verdicts are purged automatically after this window.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="audit_retention_days" class="form-label fs-8 fw-semibold text-secondary">
+                            Tamper-Evident Audit Log Retention (Days)
+                        </label>
+                        <input type="number" class="form-control" id="audit_retention_days" name="audit_retention_days" value="{{ settings.get('audit_retention_days', config.AUDIT_RETENTION_DAYS) }}" min="7" max="1825" required>
+                        <div class="form-text fs-9 text-muted">Cryptographic audit log records retention period.</div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fs-8 fw-semibold text-secondary">
+                            Session Timeout Limits
+                        </label>
+                        <div class="p-3 bg-light border rounded fs-8 text-secondary">
+                            <div>• Idle Session Inactivity Timeout: <strong>{{ config.SESSION_IDLE_MINUTES }} minutes</strong></div>
+                            <div>• Absolute Maximum Session Lifetime: <strong>{{ config.SESSION_MAX_HOURS }} hours</strong></div>
+                            <div>• Max Failed Login Attempts before Lockout: <strong>{{ config.LOGIN_MAX_FAILED_ATTEMPTS }} attempts / {{ config.LOGIN_LOCKOUT_MINUTES }} min</strong></div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end">
+                        <button type="submit" class="btn btn-primary btn-enterprise">
+                            <i class="bi bi-check-lg me-1"></i> Save Security Settings
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

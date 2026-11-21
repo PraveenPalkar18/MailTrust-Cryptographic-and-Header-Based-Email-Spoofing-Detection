@@ -91,13 +91,21 @@
                         {% endif %}
                     </div>
 
-                    <!-- Defensive Recommendation -->
-                    {% if risk.recommended_actions %}
-                        <div class="pt-2 border-top d-flex align-items-start gap-2 text-secondary fs-8">
-                            <strong class="text-dark">Recommended next step:</strong>
-                            <span>{{ risk.recommended_actions[0] }}</span>
+                    <!-- Defensive Recommendation & Signed Evidence Export -->
+                    <div class="pt-2 border-top d-flex flex-wrap justify-content-between align-items-center gap-2 text-secondary fs-8">
+                        <div>
+                            {% if risk.recommended_actions %}
+                                <strong class="text-dark">Recommended next step:</strong>
+                                <span>{{ risk.recommended_actions[0] }}</span>
+                            {% endif %}
                         </div>
-                    {% endif %}
+                        <form method="POST" action="{{ url_for('api_export_signed_report') }}">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                            <button type="submit" class="btn btn-sm btn-outline-primary font-monospace fs-9 py-1 px-2">
+                                <i class="bi bi-file-earmark-lock2 me-1"></i> Export Signed Evidence (Ed25519)
+                            </button>
+                        </form>
+                    </div>
                 </div>
 
                 <!-- Risk Score Column -->
@@ -252,7 +260,7 @@
 
             <div class="row g-3">
                 <!-- DKIM Card -->
-                <div class="col-lg-4">
+                <div class="col-lg-3 col-md-6">
                     <div class="card-enterprise h-100 d-flex flex-column justify-content-between">
                         <div>
                             <div class="card-enterprise-header d-flex justify-content-between align-items-center">
@@ -330,7 +338,7 @@
                 </div>
 
                 <!-- SPF Card -->
-                <div class="col-lg-4">
+                <div class="col-lg-3 col-md-6">
                     <div class="card-enterprise h-100 d-flex flex-column justify-content-between">
                         <div>
                             <div class="card-enterprise-header d-flex justify-content-between align-items-center">
@@ -386,7 +394,7 @@
                 </div>
 
                 <!-- DMARC Card -->
-                <div class="col-lg-4">
+                <div class="col-lg-3 col-md-6">
                     <div class="card-enterprise h-100 d-flex flex-column justify-content-between">
                         <div>
                             <div class="card-enterprise-header d-flex justify-content-between align-items-center">
@@ -444,8 +452,200 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- S/MIME Digital Signature Card -->
+                <div class="col-lg-3 col-md-6">
+                    <div class="card-enterprise h-100 d-flex flex-column justify-content-between">
+                        <div>
+                            <div class="card-enterprise-header d-flex justify-content-between align-items-center">
+                                <strong class="text-dark fs-8">S/MIME Signature</strong>
+                                <span class="status-badge {% if smime and smime.status == 'VALID' %}status-badge-success{% elif smime and smime.status in ('INVALID', 'EXPIRED_CERTIFICATE') %}status-badge-danger{% elif smime and smime.status == 'NOT_PRESENT' %}status-badge-neutral{% else %}status-badge-warning{% endif %}">
+                                    <span class="status-dot {% if smime and smime.status == 'VALID' %}status-dot-success{% elif smime and smime.status in ('INVALID', 'EXPIRED_CERTIFICATE') %}status-dot-danger{% elif smime and smime.status == 'NOT_PRESENT' %}status-dot-neutral{% else %}status-dot-warning{% endif %}"></span>
+                                    {% if not smime or smime.status == 'NOT_PRESENT' %}None Present{% else %}{{ smime.status }}{% endif %}
+                                </span>
+                            </div>
+                            <div class="p-3">
+                                <p class="text-secondary fs-8 mb-3">
+                                    {% if smime and smime.status == 'VALID' %}
+                                        Cryptographic X.509 signature verified. Message content is intact and identity matches From.
+                                    {% elif smime and smime.status == 'INVALID' %}
+                                        Mathematical signature verification failed. Message body or CMS envelope corrupted.
+                                    {% elif smime and smime.status == 'EXPIRED_CERTIFICATE' %}
+                                        Mathematical signature valid, but the signer's X.509 certificate has expired.
+                                    {% elif smime and smime.status == 'ENCRYPTED_NOT_ANALYZABLE' %}
+                                        Message is S/MIME encrypted (enveloped-data). Decryption key required for analysis.
+                                    {% elif not smime or smime.status == 'NOT_PRESENT' %}
+                                        No S/MIME digital signature envelope detected in MIME structure.
+                                    {% else %}
+                                        {{ smime.summary }}
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="p-3 pt-0">
+                            {% if smime and smime.is_smime %}
+                                <button class="btn btn-link text-decoration-none text-primary p-0 fs-9 fw-semibold font-monospace" type="button" data-bs-toggle="collapse" data-bs-target="#smimeTechDetails">
+                                    Technical Details <i class="bi bi-chevron-down ms-1"></i>
+                                </button>
+                                <div class="collapse mt-2" id="smimeTechDetails">
+                                    <table class="table-spec">
+                                        <tbody>
+                                            <tr>
+                                                <td class="spec-key">Type</td>
+                                                <td class="spec-val">{{ smime.smime_type }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="spec-key">Signer Email</td>
+                                                <td class="spec-val text-break">{{ smime.signer_email or '(None)' }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="spec-key">Common Name</td>
+                                                <td class="spec-val">{{ smime.signer_common_name or '(None)' }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="spec-key">Key Spec</td>
+                                                <td class="spec-val">{{ smime.public_key_type }} ({{ smime.public_key_size }} bits)</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="spec-key">Valid Window</td>
+                                                <td class="spec-val fs-9">{{ smime.valid_from[:10] }} to {{ smime.valid_to[:10] }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="spec-key">From Match</td>
+                                                <td class="spec-val">{{ "YES" if smime.identity_matches_from else "NO" }}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <span class="text-muted fs-9 font-monospace">RFC 8551 / CMS Detached</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
+
+        <!-- 3a. Cryptographic Hygiene & Key Strength Audit -->
+        {% if hygiene and hygiene.status != 'NOT_EVALUABLE' %}
+        <section class="card-enterprise">
+            <div class="card-enterprise-header d-flex justify-content-between align-items-center py-2 px-3">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-cpu text-primary"></i>
+                    <div>
+                        <h2 class="h6 fw-bold text-dark mb-0">Cryptographic Hygiene &amp; Key Strength Audit</h2>
+                        <span class="text-muted fs-9 font-monospace">NIST SP 800-57, RFC 6376, RFC 8301 &amp; RFC 8463 Standards</span>
+                    </div>
+                </div>
+                <span class="status-badge {% if hygiene.status == 'PASS' %}status-badge-success{% elif hygiene.status == 'WARNING' %}status-badge-warning{% else %}status-badge-danger{% endif %}">
+                    <span class="status-dot {% if hygiene.status == 'PASS' %}status-dot-success{% elif hygiene.status == 'WARNING' %}status-dot-warning{% else %}status-dot-danger{% endif %}"></span>
+                    HYGIENE: {{ hygiene.status }}
+                </span>
+            </div>
+
+            <div class="p-3">
+                <div class="row g-3 mb-3">
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="p-2 bg-light border rounded text-center">
+                            <div class="text-muted fs-9 text-uppercase">Key Bit Length</div>
+                            <div class="fw-bold font-monospace fs-7 {% if hygiene.key_size and hygiene.key_size < 1024 %}text-danger{% elif hygiene.key_size and hygiene.key_size < 2048 %}text-warning{% else %}text-success{% endif %}">
+                                {{ hygiene.key_size ~ ' bits' if hygiene.key_size else (hygiene.key_type|upper if hygiene.key_type else 'N/A') }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="p-2 bg-light border rounded text-center">
+                            <div class="text-muted fs-9 text-uppercase">Hash Algorithm</div>
+                            <div class="fw-bold font-monospace fs-7 {% if 'sha1' in (hygiene.algorithm or '') %}text-danger{% else %}text-dark{% endif %}">
+                                {{ hygiene.algorithm or 'N/A' }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="p-2 bg-light border rounded text-center">
+                            <div class="text-muted fs-9 text-uppercase">Key Type</div>
+                            <div class="fw-bold font-monospace fs-7 text-dark">{{ hygiene.key_type|upper or 'RSA' }}</div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="p-2 bg-light border rounded text-center">
+                            <div class="text-muted fs-9 text-uppercase">Hygiene Score Penalty</div>
+                            <div class="fw-bold font-monospace fs-7 {% if hygiene.score_penalty > 0 %}text-danger{% else %}text-success{% endif %}">
+                                -{{ hygiene.score_penalty }} pts
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {% if hygiene.findings %}
+                    <div class="d-flex flex-column gap-2">
+                        {% for hf in hygiene.findings %}
+                            <div class="p-3 border rounded {% if hf.severity in ('CRITICAL', 'HIGH') %}bg-danger-subtle border-danger-subtle text-danger-emphasis{% elif hf.severity == 'WARNING' %}bg-warning-subtle border-warning-subtle text-warning-emphasis{% elif hf.severity == 'PASS' %}bg-light border-light-subtle text-dark{% else %}bg-light text-secondary{% endif %} fs-8">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <strong class="fw-bold">{{ hf.title }}</strong>
+                                    <span class="badge {% if hf.severity in ('CRITICAL', 'HIGH') %}bg-danger text-white{% elif hf.severity == 'WARNING' %}bg-warning text-dark{% elif hf.severity == 'PASS' %}bg-success text-white{% else %}bg-secondary text-white{% endif %} font-monospace fs-9">
+                                        {{ hf.severity }}
+                                    </span>
+                                </div>
+                                <div class="mb-1">{{ hf.explanation }}</div>
+                                <div class="font-monospace fs-9 text-muted mb-1">Evidence: {{ hf.evidence }}</div>
+                                <div class="fs-9 fst-italic">Recommendation: {{ hf.recommendation }}</div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Header Provenance & Identity Divergence -->
+        {% if provenance and provenance.findings %}
+        <section class="card-enterprise">
+            <div class="card-enterprise-header d-flex justify-content-between align-items-center py-2 px-3">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-signpost-split text-primary"></i>
+                    <div>
+                        <h2 class="h6 fw-bold text-dark mb-0">Header Provenance &amp; Identity Divergence</h2>
+                        <span class="text-muted fs-9 font-monospace">Multi-hop MTA Stack &amp; Envelope Alignment (RFC 8601)</span>
+                    </div>
+                </div>
+                <span class="badge {% if provenance.has_anomalies %}bg-warning-subtle text-warning border border-warning-subtle{% else %}bg-success-subtle text-success border border-success-subtle{% endif %}">
+                    {% if provenance.has_anomalies %}Routing Anomalies{% else %}Headers Aligned{% endif %}
+                </span>
+            </div>
+            <div class="p-3">
+                <div class="row g-2 mb-3 fs-9 font-monospace">
+                    <div class="col-md-4">
+                        <div class="p-2 bg-light border rounded">
+                            <span class="text-muted">From Domain:</span>
+                            <div class="fw-bold text-dark">{{ provenance.identity_alignment.from_domain or 'None' }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-2 bg-light border rounded">
+                            <span class="text-muted">Reply-To Domain:</span>
+                            <div class="fw-bold {% if not provenance.identity_alignment.reply_to_matches_from %}text-danger{% else %}text-dark{% endif %}">
+                                {{ provenance.identity_alignment.reply_to_domain or 'Same as From' }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-2 bg-light border rounded">
+                            <span class="text-muted">Return-Path Domain:</span>
+                            <div class="fw-bold text-dark">{{ provenance.identity_alignment.return_path_domain or 'None' }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                {% for pf in provenance.findings %}
+                    <div class="p-2 mb-2 rounded border {% if pf.severity == 'WARNING' %}bg-warning-subtle border-warning-subtle text-warning-emphasis{% else %}bg-light text-secondary{% endif %} fs-8">
+                        <strong>{{ pf.title }}:</strong> {{ pf.details }}
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
 
         <!-- 3b. Receiver-Reported Delivery Evidence (Authentication-Results & Received-SPF) -->
         {% if parsed_email.authentication_results_headers or parsed_email.received_spf_parsed %}
@@ -586,6 +786,9 @@
                                     <button class="nav-link" data-bs-toggle="pill" data-bs-target="#urls-pane">Hyperlinks ({{ parsed_email.urls_count }})</button>
                                 </li>
                                 <li class="nav-item">
+                                    <button class="nav-link" data-bs-toggle="pill" data-bs-target="#attachments-pane">Attachments ({{ parsed_email.attachments|length }})</button>
+                                </li>
+                                <li class="nav-item">
                                     <button class="nav-link" data-bs-toggle="pill" data-bs-target="#body-pane">Message Text</button>
                                 </li>
                             </ul>
@@ -643,6 +846,50 @@
                                         </div>
                                     {% else %}
                                         <p class="text-muted fs-9 mb-0">No URLs found in email body.</p>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Attachments Pane -->
+                                <div class="tab-pane fade" id="attachments-pane">
+                                    {% if parsed_email.attachments %}
+                                        <div class="table-responsive">
+                                            <table class="table-enterprise font-monospace fs-9">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Filename</th>
+                                                        <th>Size</th>
+                                                        <th>Magic Detected Type</th>
+                                                        <th>Static Findings</th>
+                                                        <th>SHA-256 Fingerprint</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for att in parsed_email.attachments %}
+                                                        <tr>
+                                                            <td class="fw-bold text-dark">{{ att.filename }}</td>
+                                                            <td>{{ att.size }} bytes</td>
+                                                            <td>{{ att.magic_detected_type or 'Binary' }}</td>
+                                                            <td>
+                                                                {% if att.has_magic_mismatch %}
+                                                                    <span class="status-badge status-badge-danger">MAGIC MISMATCH</span>
+                                                                {% elif att.has_double_extension %}
+                                                                    <span class="status-badge status-badge-danger">DOUBLE EXTENSION</span>
+                                                                {% elif att.has_embedded_macro %}
+                                                                    <span class="status-badge status-badge-warning">VBA MACRO</span>
+                                                                {% elif att.is_dangerous %}
+                                                                    <span class="status-badge status-badge-danger">DANGEROUS EXT</span>
+                                                                {% else %}
+                                                                    <span class="status-badge status-badge-success">STATIC PASS</span>
+                                                                {% endif %}
+                                                            </td>
+                                                            <td class="text-muted" title="{{ att.sha256 }}">{{ att.sha256[:16] }}...</td>
+                                                        </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    {% else %}
+                                        <p class="text-muted fs-9 mb-0">No attachments included in this email message.</p>
                                     {% endif %}
                                 </div>
 

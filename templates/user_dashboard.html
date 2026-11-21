@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}User Dashboard — MailTrust{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- User Overview Header -->
+    <div class="col-12">
+        <div class="card card-enterprise p-4">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="brand-mark" style="width: 52px; height: 52px; font-size: 1.5rem;">
+                        <i class="bi bi-person-badge"></i>
+                    </div>
+                    <div>
+                        <h4 class="fw-bold text-dark mb-1">{{ user.username }}</h4>
+                        <div class="d-flex align-items-center gap-2 text-secondary fs-8">
+                            <span><i class="bi bi-envelope me-1"></i>{{ user.email }}</span>
+                            <span>•</span>
+                            <span class="badge {% if user.role == 'ADMIN' %}bg-primary{% else %}bg-secondary{% endif %}">{{ user.role }}</span>
+                            <span>•</span>
+                            <span>MFA: {% if user.totp_enabled %}<span class="text-success fw-semibold"><i class="bi bi-shield-check"></i> Enabled</span>{% else %}<span class="text-warning fw-semibold"><i class="bi bi-shield-slash"></i> Disabled</span>{% endif %}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('account') }}" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-gear me-1"></i> Account Settings
+                    </a>
+                    <a href="{{ url_for('index') }}#analyze-section" class="btn btn-sm btn-enterprise">
+                        <i class="bi bi-plus-lg me-1"></i> New Analysis
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Forensic History Table -->
+    <div class="col-12">
+        <div class="card card-enterprise">
+            <div class="card-enterprise-header d-flex justify-content-between align-items-center py-3 px-4 border-bottom">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-clock-history text-primary"></i>
+                    <h6 class="fw-bold text-dark mb-0">Personal Forensic Scan History</h6>
+                </div>
+                <span class="badge bg-light text-secondary border font-monospace">{{ total_scans }} Recorded Scans</span>
+            </div>
+            
+            <div class="card-body p-0">
+                {% if scans %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0 fs-8">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-4">Timestamp</th>
+                                    <th>Subject &amp; Domain</th>
+                                    <th>Verdict</th>
+                                    <th>Risk Score</th>
+                                    <th>Protocols (DKIM / SPF / DMARC / S/MIME)</th>
+                                    <th class="pe-4 text-end">File SHA-256</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for scan in scans %}
+                                    <tr>
+                                        <td class="ps-4 text-nowrap text-secondary font-monospace fs-9">
+                                            {{ scan.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                        </td>
+                                        <td>
+                                            <div class="fw-semibold text-dark">{{ scan.subject_preview }}</div>
+                                            <div class="text-muted fs-9">{{ scan.sender_domain or scan.from_address or 'Unknown sender' }}</div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{{ scan.verdict_badge_class }}-subtle text-{{ scan.verdict_badge_class }} border border-{{ scan.verdict_badge_class }}-subtle">
+                                                {{ scan.verdict }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <div class="progress flex-grow-1" style="height: 6px; width: 60px;">
+                                                    <div class="progress-bar bg-{{ scan.verdict_badge_class }}" style="width: {{ scan.risk_score }}%;"></div>
+                                                </div>
+                                                <span class="font-monospace fw-bold fs-9">{{ scan.risk_score }}</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex gap-1 font-monospace fs-9">
+                                                <span class="badge {% if scan.dkim_status == 'PASS' %}bg-success-subtle text-success border border-success-subtle{% elif scan.dkim_status == 'FAIL' %}bg-danger-subtle text-danger border border-danger-subtle{% else %}bg-light text-secondary border{% endif %}">DKIM: {{ scan.dkim_status or 'N/A' }}</span>
+                                                <span class="badge {% if scan.spf_status == 'pass' %}bg-success-subtle text-success border border-success-subtle{% elif scan.spf_status == 'fail' %}bg-danger-subtle text-danger border border-danger-subtle{% else %}bg-light text-secondary border{% endif %}">SPF: {{ scan.spf_status or 'N/A' }}</span>
+                                                <span class="badge {% if scan.dmarc_status == 'pass' %}bg-success-subtle text-success border border-success-subtle{% elif scan.dmarc_status == 'fail' %}bg-danger-subtle text-danger border border-danger-subtle{% else %}bg-light text-secondary border{% endif %}">DMARC: {{ scan.dmarc_status or 'N/A' }}</span>
+                                                <span class="badge {% if scan.smime_status == 'VALID' %}bg-info-subtle text-info-emphasis border border-info-subtle{% elif scan.smime_status == 'INVALID' %}bg-danger-subtle text-danger border border-danger-subtle{% else %}bg-light text-secondary border{% endif %}">S/MIME: {{ scan.smime_status or 'N/A' }}</span>
+                                            </div>
+                                        </td>
+                                        <td class="pe-4 text-end font-monospace text-muted fs-9" title="{{ scan.file_sha256 }}">
+                                            {{ scan.file_sha256[:10] }}...
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5 text-secondary">
+                        <i class="bi bi-inbox fs-2 text-muted mb-2 d-block"></i>
+                        <p class="mb-2">No email forensic scans recorded under your account yet.</p>
+                        <a href="{{ url_for('index') }}#analyze-section" class="btn btn-sm btn-primary">Run First Analysis</a>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="card-footer bg-light border-top py-2 px-4 d-flex justify-content-between align-items-center fs-9 text-muted">
+                <span><i class="bi bi-shield-check text-success me-1"></i>Privacy Policy: Only cryptographic verdicts, SHA-256 fingerprints, and metadata are persisted.</span>
+                <span>Retention: {{ config.ANALYSIS_RETENTION_DAYS }} Days</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

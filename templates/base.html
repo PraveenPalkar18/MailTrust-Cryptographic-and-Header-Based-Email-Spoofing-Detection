@@ -14,6 +14,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <!-- Custom Modern SaaS CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <meta name="csrf-token" content="{{ csrf_token or '' }}">
     {% block head %}{% endblock %}
 </head>
 <body class="d-flex flex-column min-vh-100">
@@ -37,12 +38,12 @@
                 <ul class="navbar-nav mx-auto mb-2 mb-lg-0 gap-lg-2">
                     <li class="nav-item">
                         <a class="nav-link nav-link-enterprise {% if request.endpoint == 'index' %}active{% endif %}" href="{{ url_for('index') }}">
-                            Dashboard
+                            Workbench
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link nav-link-enterprise" href="{{ url_for('index') }}#analyze-section">
-                            Inspect Email
+                        <a class="nav-link nav-link-enterprise {% if request.endpoint == 'verify_report' %}active{% endif %}" href="{{ url_for('verify_report') }}">
+                            Verify Report
                         </a>
                     </li>
                     <li class="nav-item">
@@ -58,11 +59,38 @@
                 </ul>
 
                 <div class="d-flex align-items-center gap-2">
-                    <span class="nav-status-indicator font-monospace d-none d-xl-inline-flex" title="All processing occurs strictly in RAM. Zero persistence.">
-                        <span class="status-dot status-dot-success"></span> In-Memory Analysis
-                    </span>
-                    <a href="{{ url_for('index') }}#analyze-section" class="btn btn-sm btn-enterprise">
-                        <i class="bi bi-plus-lg"></i> New Analysis
+                    {% if current_user %}
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle d-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-person-circle"></i>
+                                <span class="fw-semibold">{{ current_user.username }}</span>
+                                <span class="badge {% if current_user.role == 'ADMIN' %}bg-primary{% else %}bg-secondary{% endif %} ms-1" style="font-size: 0.68rem;">{{ current_user.role }}</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow-sm fs-8 border-light-subtle">
+                                <li><a class="dropdown-item py-2" href="{{ url_for('user_dashboard') }}"><i class="bi bi-speedometer2 me-2"></i>My Dashboard</a></li>
+                                <li><a class="dropdown-item py-2" href="{{ url_for('account') }}"><i class="bi bi-shield-lock me-2"></i>Security &amp; MFA</a></li>
+                                {% if current_user.role == 'ADMIN' %}
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><h6 class="dropdown-header text-uppercase fs-9 fw-bold">Admin Console</h6></li>
+                                    <li><a class="dropdown-item py-2" href="{{ url_for('admin_dashboard') }}"><i class="bi bi-gear-wide-connected me-2"></i>Admin Overview</a></li>
+                                    <li><a class="dropdown-item py-2" href="{{ url_for('admin_users') }}"><i class="bi bi-people me-2"></i>User Management</a></li>
+                                    <li><a class="dropdown-item py-2" href="{{ url_for('admin_audit') }}"><i class="bi bi-journal-code me-2"></i>Audit Log Chain</a></li>
+                                    <li><a class="dropdown-item py-2" href="{{ url_for('admin_settings') }}"><i class="bi bi-sliders me-2"></i>System Settings</a></li>
+                                {% endif %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item py-2 text-danger" href="{{ url_for('logout') }}"><i class="bi bi-box-arrow-right me-2"></i>Sign Out</a></li>
+                            </ul>
+                        </div>
+                    {% else %}
+                        <a href="{{ url_for('login') }}" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-box-arrow-in-right"></i> Sign In
+                        </a>
+                        <a href="{{ url_for('register') }}" class="btn btn-sm btn-primary">
+                            Register
+                        </a>
+                    {% endif %}
+                    <a href="{{ url_for('index') }}#analyze-section" class="btn btn-sm btn-enterprise ms-1">
+                        <i class="bi bi-plus-lg"></i> Inspect Email
                     </a>
                 </div>
             </div>

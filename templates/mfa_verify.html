@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Multi-Factor Authentication — MailTrust CNS Security{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-4">
+    <div class="col-12 col-md-8 col-lg-5">
+        <div class="card card-enterprise shadow-sm border-light-subtle">
+            <div class="card-enterprise-header text-center py-3 bg-white border-bottom">
+                <div class="brand-mark mx-auto mb-2" style="width: 42px; height: 42px; font-size: 1.25rem;">
+                    <i class="bi bi-shield-lock-fill text-primary"></i>
+                </div>
+                <h5 class="fw-bold text-dark mb-1">Two-Factor Authentication</h5>
+                <p class="text-muted fs-8 mb-0">Enter the 6-digit code from your authenticator application.</p>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('mfa_verify') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+                    <div class="mb-4 text-center">
+                        <label for="totp_code" class="form-label fs-8 fw-semibold text-secondary mb-2">Authenticator Code</label>
+                        <input type="text" 
+                               class="form-control text-center font-monospace fs-4 fw-bold letter-spacing-2" 
+                               id="totp_code" 
+                               name="totp_code" 
+                               required 
+                               autofocus 
+                               autocomplete="one-time-code" 
+                               maxlength="12" 
+                               placeholder="123456" 
+                               style="letter-spacing: 0.25em;">
+                        <div class="form-text fs-9 text-muted mt-2">
+                            Standard RFC 6238 TOTP code (or enter a single-use recovery code e.g. ABCD-EFGH).
+                        </div>
+                    </div>
+
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-primary btn-enterprise py-2">
+                            <i class="bi bi-check-lg me-1"></i> Verify &amp; Continue
+                        </button>
+                    </div>
+                </form>
+
+                <div class="border-top pt-3 mt-4 text-center">
+                    <a href="{{ url_for('logout') }}" class="fs-8 text-secondary">
+                        <i class="bi bi-arrow-left me-1"></i> Return to Sign In
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

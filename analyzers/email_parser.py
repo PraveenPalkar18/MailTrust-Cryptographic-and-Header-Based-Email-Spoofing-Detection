@@ -40,6 +40,7 @@ class ParsedEmail:
         # Message Metadata
         self.subject: str = ""
         self.date_raw: str = ""
+        self.date: str = ""
         self.message_id: str = ""
         self.to_addresses: List[str] = []
         self.cc_addresses: List[str] = []
@@ -432,6 +433,7 @@ def parse_raw_email(raw_input: Any) -> ParsedEmail:
     # 4. Message Metadata
     result.subject = str(msg.get("Subject", "(No Subject)"))
     result.date_raw = str(msg.get("Date", ""))
+    result.date = result.date_raw
     result.message_id = str(msg.get("Message-ID", "")).strip("<> ")
 
     # Recipients

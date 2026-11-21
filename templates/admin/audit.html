@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}Audit Ledger — Admin Console{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- Audit Chain Integrity Banner -->
+    <div class="col-12">
+        <div class="card card-enterprise">
+            <div class="card-enterprise-header d-flex flex-column flex-md-row justify-content-between align-items-md-center py-3 px-4 border-bottom gap-2">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-journal-code text-primary fs-5"></i>
+                    <div>
+                        <h5 class="fw-bold text-dark mb-0">Tamper-Evident Security Audit Log</h5>
+                        <span class="text-muted fs-9">SHA-256 Hash Chained with RFC 8785 Canonical JSON ($H_i = \text{SHA256}(\text{CanonicalEvent}_i \mathbin{\Vert} H_{i-1})$)</span>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <form method="POST" action="{{ url_for('admin_create_checkpoint') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        <button type="submit" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-patch-check me-1"></i> Sign Ed25519 Checkpoint
+                        </button>
+                    </form>
+                    {% if verification.is_valid %}
+                        <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 fs-8">
+                            <i class="bi bi-shield-check"></i> CHAIN VERIFIED ({{ verification.total_records }} Events)
+                        </span>
+                    {% else %}
+                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-2 fs-8">
+                            <i class="bi bi-shield-slash"></i> TAMPERING DETECTED!
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Checkpoints Accordion if present -->
+            {% if checkpoints %}
+                <div class="p-3 bg-light border-bottom">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <strong class="fs-9 text-uppercase text-secondary"><i class="bi bi-bookmark-check me-1"></i>Ed25519 Cryptographic Anchors &amp; Checkpoints</strong>
+                        <span class="badge bg-white text-secondary border fs-9">{{ checkpoints | length }} Checkpoints Saved</span>
+                    </div>
+                    <div class="d-flex flex-column gap-2 fs-9 font-monospace">
+                        {% for cp in checkpoints %}
+                            <div class="bg-white p-2 border rounded d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+                                <div>
+                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle me-1">Seq #{{ cp.sequence_num }}</span>
+                                    <span class="text-secondary">{{ cp.timestamp_utc }}</span>
+                                    <span class="text-muted ms-2" title="{{ cp.checkpoint_hash }}">Hash: {{ cp.checkpoint_hash[:16] }}...</span>
+                                </div>
+                                <div class="text-muted fs-9 text-truncate" style="max-width: 320px;" title="{{ cp.signature_b64 }}">
+                                    Sig: {{ cp.signature_b64[:24] }}...
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Table of Audit Events -->
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0 fs-9 font-monospace">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-4">Seq</th>
+                                <th>Timestamp (UTC)</th>
+                                <th>Actor</th>
+                                <th>Action</th>
+                                <th>Resource</th>
+                                <th>Outcome</th>
+                                <th>Prev Hash ($H_{i-1}$)</th>
+                                <th class="pe-4">Current Hash ($H_i$)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in logs %}
+                                <tr>
+                                    <td class="ps-4 fw-bold text-dark">#{{ log.sequence_num }}</td>
+                                    <td class="text-secondary text-nowrap">{{ log.timestamp_utc }}</td>
+                                    <td>
+                                        <span class="badge bg-light text-dark border">{{ log.actor_id }}</span>
+                                    </td>
+                                    <td class="fw-semibold text-primary text-nowrap">{{ log.action }}</td>
+                                    <td class="text-muted">{{ log.resource_type }}:{{ log.resource_id }}</td>
+                                    <td>
+                                        {% if log.outcome == "SUCCESS" %}
+                                            <span class="badge bg-success-subtle text-success border border-success-subtle">SUCCESS</span>
+                                        {% elif log.outcome == "BLOCKED" %}
+                                            <span class="badge bg-warning-subtle text-warning border border-warning-subtle">BLOCKED</span>
+                                        {% else %}
+                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle">FAILURE</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-muted" title="{{ log.prev_hash }}">
+                                        {{ log.prev_hash[:10] }}...
+                                    </td>
+                                    <td class="pe-4 fw-bold text-dark" title="{{ log.current_hash }}">
+                                        {{ log.current_hash[:10] }}...
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card-footer bg-light border-top py-2 px-4 d-flex justify-content-between align-items-center fs-9 text-muted">
+                <span><i class="bi bi-info-circle me-1"></i>Cryptographic Hash Chaining: Any modification to an audit record invalidates all subsequent hashes in the chain.</span>
+                <span>Ledger Retention: {{ config.AUDIT_RETENTION_DAYS }} Days</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

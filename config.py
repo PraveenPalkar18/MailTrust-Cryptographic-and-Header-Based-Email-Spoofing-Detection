@@ -76,3 +76,36 @@ class Config:
         ".iso", ".img", ".vhd", ".pif", ".reg", ".com"
     }
 
+    # Database Persistence
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    DATABASE_PATH = os.path.join(BASE_DIR, "mailtrust.db")
+    DATABASE_URL = os.environ.get("DATABASE_URL", f"sqlite:///{DATABASE_PATH}")
+
+    # Session & Cookie Security
+    SESSION_COOKIE_NAME = "mailtrust_session"
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = "Lax"
+    SESSION_COOKIE_SECURE = os.environ.get("FLASK_ENV") == "production"
+    SESSION_IDLE_MINUTES = int(os.environ.get("SESSION_IDLE_MINUTES", 30))
+    SESSION_MAX_HOURS = int(os.environ.get("SESSION_MAX_HOURS", 12))
+
+    # Rate Limiting & Account Lockout
+    LOGIN_MAX_FAILED_ATTEMPTS = int(os.environ.get("LOGIN_MAX_FAILED_ATTEMPTS", 5))
+    LOGIN_LOCKOUT_MINUTES = int(os.environ.get("LOGIN_LOCKOUT_MINUTES", 15))
+
+    # Cryptographic Keys (Loaded from environment or auto-generated securely)
+    # Fernet key must be 32 url-safe base64-encoded bytes
+    TOTP_ENCRYPTION_KEY = os.environ.get(
+        "TOTP_ENCRYPTION_KEY",
+        "k_vQe6f-4rW1T1eR3b4LzJvQxG_mX4v7t_Q9L5oR1gI="  # Default fallback dev key
+    )
+    # Ed25519 Report & Checkpoint Signing Private Key (Base64 raw 32-byte seed or None for dynamic generation)
+    ED25519_PRIVATE_KEY_B64 = os.environ.get("ED25519_PRIVATE_KEY_B64", None)
+
+    # Privacy and Data Retention
+    ANALYSIS_RETENTION_DAYS = int(os.environ.get("ANALYSIS_RETENTION_DAYS", 30))
+    AUDIT_RETENTION_DAYS = int(os.environ.get("AUDIT_RETENTION_DAYS", 90))
+
+    # S/MIME Custom Trust Store Bundle (optional path to PEM file)
+    SMIME_TRUSTED_CA_BUNDLE = os.environ.get("SMIME_TRUSTED_CA_BUNDLE", None)
+

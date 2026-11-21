@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Verify Forensic Evidence Report — MailTrust{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-3">
+    <div class="col-12 col-lg-9">
+        <div class="card card-enterprise mb-4">
+            <div class="card-enterprise-header py-3 px-4 border-bottom d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-patch-check-fill text-primary fs-5"></i>
+                    <h5 class="fw-bold text-dark mb-0">Cryptographic Evidence Verification</h5>
+                </div>
+                <span class="badge bg-light text-secondary border font-monospace">Ed25519 &amp; RFC 8785</span>
+            </div>
+            
+            <div class="card-body p-4">
+                <p class="fs-8 text-secondary mb-4">
+                    MailTrust signs all exported forensic reports with an Ed25519 digital signature over an RFC 8785 deterministic canonical JSON snapshot. Upload or paste a report below to mathematically verify its authenticity and check for any post-export tampering.
+                </p>
+
+                <form method="POST" action="{{ url_for('verify_report') }}" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+                    <div class="mb-3">
+                        <label for="report_file" class="form-label fs-8 fw-semibold text-secondary">Option 1: Upload Signed Report JSON</label>
+                        <input class="form-control" type="file" id="report_file" name="report_file" accept=".json">
+                    </div>
+
+                    <div class="text-center text-muted fs-9 my-3">— OR —</div>
+
+                    <div class="mb-3">
+                        <label for="report_text" class="form-label fs-8 fw-semibold text-secondary">Option 2: Paste Report JSON Content</label>
+                        <textarea class="form-control font-monospace fs-9" id="report_text" name="report_text" rows="8" placeholder='{ "payload": { ... }, "signature_block": { ... } }'>{{ report_content or '' }}</textarea>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <button type="submit" class="btn btn-primary btn-enterprise px-4">
+                            <i class="bi bi-shield-check me-1"></i> Verify Signature &amp; Integrity
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {% if verification_result %}
+            <div class="card card-enterprise">
+                <div class="card-enterprise-header py-3 px-4 border-bottom d-flex justify-content-between align-items-center">
+                    <h6 class="fw-bold text-dark mb-0">Forensic Verification Outcome</h6>
+                    {% if verification_result.status == "AUTHENTIC" %}
+                        <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 fs-8">
+                            <i class="bi bi-check-circle-fill me-1"></i> AUTHENTIC &amp; UNTAMPERED
+                        </span>
+                    {% elif verification_result.status == "TAMPERED" %}
+                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-2 fs-8">
+                            <i class="bi bi-exclamation-triangle-fill me-1"></i> TAMPERED EVIDENCE DETECTED
+                        </span>
+                    {% else %}
+                        <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-3 py-2 fs-8">
+                            <i class="bi bi-x-circle-fill me-1"></i> {{ verification_result.status }}
+                        </span>
+                    {% endif %}
+                </div>
+                
+                <div class="card-body p-4">
+                    <div class="alert {% if verification_result.is_authentic %}alert-success{% else %}alert-danger{% endif %} border p-3 fs-8 mb-4">
+                        <div class="fw-bold mb-1">{{ verification_result.status }}: {{ verification_result.details }}</div>
+                        {% if verification_result.public_key %}
+                            <div class="mt-2 text-muted font-monospace fs-9">Signer Public Key (Ed25519): {{ verification_result.public_key }}</div>
+                        {% endif %}
+                    </div>
+
+                    {% if verification_result.payload %}
+                        <h6 class="fw-bold text-dark mb-2 fs-8">Verified Evidence Payload Summary</h6>
+                        <div class="bg-light p-3 border rounded font-monospace fs-9 overflow-auto" style="max-height: 300px;">
+                            <pre class="mb-0 text-dark">{{ verification_result.payload | tojson(indent=2) }}</pre>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
