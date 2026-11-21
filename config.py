@@ -89,7 +89,10 @@ class Config:
     MONGODB_DB_NAME = os.environ.get("MONGODB_DB_NAME", "luxury_travel")
 
     # Session & Cookie Security
-    SESSION_COOKIE_NAME = "mailtrust_session"
+    # Dedicated auth token cookie, distinct from Flask's internal session cookie
+    AUTH_COOKIE_NAME = "mailtrust_auth_token"
+    SESSION_COOKIE_NAME = "mailtrust_auth_token"
+    FLASK_SESSION_COOKIE_NAME = "mailtrust_flask_session"
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = "Lax"
     SESSION_COOKIE_SECURE = os.environ.get("FLASK_ENV") == "production"

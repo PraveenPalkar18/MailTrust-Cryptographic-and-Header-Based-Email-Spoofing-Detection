@@ -105,15 +105,78 @@ def mongo_save_user(user) -> bool:
 
 
 def mongo_delete_user(user) -> bool:
-    """Delete a User document from MongoDB Atlas."""
+    """Delete a User document and associated sessions/analyses from MongoDB Atlas."""
     try:
         col = get_collection("users")
-        if col is None:
-            return False
-        col.delete_one({"username": user.username})
+        if col is not None:
+            col.delete_one({"username": user.username})
+        
+        # Clean up associated sessions and analysis records
+        col_sess = get_collection("sessions")
+        if col_sess is not None and getattr(user, "id", None):
+            col_sess.delete_many({"user_id": user.id})
+            
+        col_analyses = get_collection("analysis_records")
+        if col_analyses is not None and getattr(user, "id", None):
+            col_analyses.delete_many({"user_id": user.id})
+            
         return True
     except Exception as e:
         logger.warning(f"MongoDB delete_user error: {e}")
+        return False
+
+
+def mongo_get_all_users() -> List[Dict[str, Any]]:
+    """Fetch all users directly from MongoDB Atlas."""
+    try:
+        col = get_collection("users")
+        if col is None:
+            return []
+        return list(col.find({}, {"password_hash": 0}).sort("created_at", -1))
+    except Exception as e:
+        logger.warning(f"MongoDB get_all_users error: {e}")
+        return []
+
+
+def mongo_get_user_by_id(user_id: int) -> Optional[Dict[str, Any]]:
+    """Fetch a single user by integer id from MongoDB Atlas."""
+    try:
+        col = get_collection("users")
+        if col is None:
+            return None
+        return col.find_one({"id": user_id})
+    except Exception as e:
+        logger.warning(f"MongoDB get_user_by_id error: {e}")
+        return None
+
+
+def mongo_get_user_scans(user_id: int) -> List[Dict[str, Any]]:
+    """Fetch all forensic analysis records for a specific user from MongoDB Atlas."""
+    try:
+        col = get_collection("analysis_records")
+        if col is None:
+            return []
+        return list(col.find({"user_id": user_id}).sort("created_at", -1))
+    except Exception as e:
+        logger.warning(f"MongoDB get_user_scans error: {e}")
+        return []
+
+
+def mongo_delete_user_by_id(user_id: int) -> bool:
+    """Delete a user and associated data from MongoDB Atlas by user ID."""
+    try:
+        col_users = get_collection("users")
+        if col_users is not None:
+            col_users.delete_one({"id": user_id})
+        col_sess = get_collection("sessions")
+        if col_sess is not None:
+            col_sess.delete_many({"user_id": user_id})
+        col_analyses = get_collection("analysis_records")
+        if col_analyses is not None:
+            col_analyses.delete_many({"user_id": user_id})
+        return True
+    except Exception as e:
+        logger.warning(f"MongoDB delete_user_by_id error: {e}")
         return False
 
 
@@ -380,7 +443,9 @@ def sync_from_mongodb_to_sqlite(db_session):
         # 1. Sync Users
         col_users = db["mailtrust_users"]
         for udoc in col_users.find():
-            existing = db_session.query(User).filter_by(username=udoc["username"]).first()
+            existing = db_session.query(User).filter(
+                (User.username == udoc["username"]) | (User.email == udoc["email"])
+            ).first()
             if not existing:
                 u = User(
                     username=udoc["username"],
@@ -439,7 +504,9 @@ def sync_from_mongodb_to_sqlite(db_session):
         # 4. Sync Audit Logs
         col_audit = db["mailtrust_audit_logs"]
         for aud_doc in col_audit.find().sort("sequence_num", 1).limit(1000):
-            existing = db_session.query(AuditLog).filter_by(event_id=aud_doc["event_id"]).first()
+            existing = db_session.query(AuditLog).filter(
+                (AuditLog.event_id == aud_doc["event_id"]) | (AuditLog.sequence_num == aud_doc["sequence_num"])
+            ).first()
             if not existing:
                 aud = AuditLog(
                     sequence_num=aud_doc["sequence_num"],

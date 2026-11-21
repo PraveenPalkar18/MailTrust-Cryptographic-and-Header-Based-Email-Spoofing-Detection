@@ -65,6 +65,7 @@ from analyzers.lab_engine import generate_lab_keypair, sign_lab_email, verify_la
 # Initialize Flask Application
 app = Flask(__name__)
 app.config.from_object(Config)
+app.config["SESSION_COOKIE_NAME"] = getattr(Config, "FLASK_SESSION_COOKIE_NAME", "mailtrust_flask_session")
 
 # Initialize Relational Database Schema
 with app.app_context():
@@ -864,15 +865,10 @@ def login():
             clear_failed_attempts(client_ip)
             clear_failed_attempts(identifier)
 
-            if user.role == "ADMIN" or user.totp_enabled:
-                if not user.totp_enabled:
-                    session["pre_auth_user_id"] = user.id
-                    flash("Administrator accounts require multi-factor authentication. Please configure TOTP to proceed.", "info")
-                    return redirect(url_for("mfa_setup"))
-                else:
-                    session["pre_auth_user_id"] = user.id
-                    session["pre_auth_next_url"] = next_url
-                    return redirect(url_for("mfa_verify"))
+            if user.totp_enabled:
+                session["pre_auth_user_id"] = user.id
+                session["pre_auth_next_url"] = next_url
+                return redirect(url_for("mfa_verify"))
 
             user.last_login_at = utc_now()
             user.failed_login_attempts = 0
@@ -1092,21 +1088,54 @@ def logout():
 
 
 @app.route("/dashboard")
-@login_required
 def user_dashboard():
-    """User account dashboard displaying recent personal scans and security status."""
-    if g.current_user and g.current_user.role == "ADMIN":
+    """
+    Forensic dashboard with role-tailored view:
+    - Admin: Redirects to /admin.
+    - Normal User: Displays their own email scan history only.
+    - Guest: Stateless dashboard with NO scan history displayed.
+    """
+    if g.get("current_user") and g.current_user.role == "ADMIN":
         return redirect(url_for("admin_dashboard"))
 
+    if g.get("current_user"):
+        with get_db() as db:
+            user_scans = db.query(AnalysisRecord).filter_by(user_id=g.current_user.id).order_by(AnalysisRecord.created_at.desc()).all()
+            total_scans = len(user_scans)
+        return render_template(
+            "user_dashboard.html",
+            user=g.current_user,
+            scans=user_scans,
+            total_scans=total_scans,
+            is_guest=False
+        )
+    else:
+        # Unauthenticated GUEST: Stateless mode. Zero history is shown.
+        return render_template(
+            "user_dashboard.html",
+            user=None,
+            scans=[],
+            total_scans=0,
+            is_guest=True
+        )
+
+
+@app.route("/admin/users/<int:user_id>/scans")
+@admin_required
+def admin_user_scans(user_id):
+    """Admin inspection of a specific user's email forensic scan history."""
     with get_db() as db:
-        user_scans = db.query(AnalysisRecord).filter_by(user_id=g.current_user.id).order_by(AnalysisRecord.created_at.desc()).limit(20).all()
-        total_scans = db.query(AnalysisRecord).filter_by(user_id=g.current_user.id).count()
+        target_user = db.query(User).filter_by(id=user_id).first()
+        if not target_user:
+            flash("User not found.", "warning")
+            return redirect(url_for("admin_users"))
+        user_scans = db.query(AnalysisRecord).filter_by(user_id=user_id).order_by(AnalysisRecord.created_at.desc()).all()
 
     return render_template(
-        "user_dashboard.html",
-        user=g.current_user,
+        "admin/user_scans.html",
+        target_user=target_user,
         scans=user_scans,
-        total_scans=total_scans
+        total_scans=len(user_scans)
     )
 
 

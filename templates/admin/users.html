@@ -69,9 +69,14 @@
                                         {{ u.last_login_at.strftime('%Y-%m-%d %H:%M') if u.last_login_at else 'Never' }}
                                     </td>
                                     <td class="pe-4 text-end">
-                                        <div class="d-inline-flex gap-1">
+                                        <div class="d-inline-flex gap-1 align-items-center">
+                                            <!-- View User Scans Button -->
+                                            <a href="{{ url_for('admin_user_scans', user_id=u.id) }}" class="btn btn-sm btn-outline-primary py-0 px-2 fs-9" title="View scan history for {{ u.username }}">
+                                                <i class="bi bi-search me-1"></i> Scans
+                                            </a>
+
                                             <!-- Toggle Lock Button -->
-                                            <form method="POST" action="{{ url_for('admin_users') }}">
+                                            <form method="POST" action="{{ url_for('admin_users') }}" class="m-0">
                                                 <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                                                 <input type="hidden" name="action" value="toggle_lock">
                                                 <input type="hidden" name="user_id" value="{{ u.id }}">
@@ -81,11 +86,11 @@
                                             </form>
 
                                             <!-- Delete User Button -->
-                                            <form method="POST" action="{{ url_for('admin_users') }}" onsubmit="return confirm('Are you sure you want to permanently delete user {{ u.username }}?');">
+                                            <form method="POST" action="{{ url_for('admin_users') }}" class="m-0" onsubmit="return confirm('Are you sure you want to permanently delete user {{ u.username }} and all their scan data?');">
                                                 <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                                                 <input type="hidden" name="action" value="delete_user">
                                                 <input type="hidden" name="user_id" value="{{ u.id }}">
-                                                <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2 fs-9" title="Delete user">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2 fs-9" title="Delete user" {% if u.id == current_user.id %}disabled{% endif %}>
                                                     <i class="bi bi-trash"></i>
                                                 </button>
                                             </form>

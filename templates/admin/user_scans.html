@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}User Scans: {{ target_user.username }} — Admin Console{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-12">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+            <a href="{{ url_for('admin_users') }}" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Back to User Directory
+            </a>
+            <span class="badge bg-primary fs-9 font-monospace">Admin Inspection</span>
+        </div>
+
+        <div class="card card-enterprise">
+            <div class="card-enterprise-header d-flex justify-content-between align-items-center py-3 px-4 border-bottom">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="brand-mark" style="width: 44px; height: 44px; font-size: 1.25rem;">
+                        <i class="bi bi-clock-history"></i>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold text-dark mb-0">Email Scan History: <span class="text-primary">{{ target_user.username }}</span></h5>
+                        <div class="text-muted fs-8">
+                            <span>{{ target_user.email }}</span> &bull; 
+                            <span class="badge {% if target_user.role == 'ADMIN' %}bg-primary{% else %}bg-secondary{% endif %} ms-1">{{ target_user.role }}</span> &bull;
+                            <span>Registered: {{ target_user.created_at.strftime('%Y-%m-%d') }}</span>
+                        </div>
+                    </div>
+                </div>
+                <span class="badge bg-light text-secondary border font-monospace">{{ total_scans }} Scans Recorded</span>
+            </div>
+
+            <div class="card-body p-0">
+                {% if scans %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0 fs-8">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-4">Timestamp</th>
+                                    <th>Subject &amp; Sender Domain</th>
+                                    <th>Verdict</th>
+                                    <th>Risk Score</th>
+                                    <th>Protocols (DKIM / SPF / DMARC / S/MIME)</th>
+                                    <th class="pe-4 text-end">File SHA-256</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for scan in scans %}
+                                    <tr>
+                                        <td class="ps-4 text-nowrap text-secondary font-monospace fs-9">
+                                            {{ scan.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                        </td>
+                                        <td>
+                                            <div class="fw-semibold text-dark">{{ scan.subject_preview or '(No Subject)' }}</div>
+                                            <div class="text-muted fs-9">{{ scan.sender_domain or scan.from_address or 'Unknown sender' }}</div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{{ scan.verdict_badge_class }}-subtle text-{{ scan.verdict_badge_class }} border border-{{ scan.verdict_badge_class }}-subtle">
+                                                {{ scan.verdict }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <div class="progress flex-grow-1" style="height: 6px; width: 60px;">
+                                                    <div class="progress-bar bg-{{ scan.verdict_badge_class }}" style="width: {{ scan.risk_score }}%;"></div>
+                                                </div>
+                                                <span class="font-monospace fw-bold fs-9">{{ scan.risk_score }}</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex gap-1 font-monospace fs-9">
+                                                <span class="badge {% if scan.dkim_status == 'PASS' %}bg-success-subtle text-success border border-success-subtle{% elif scan.dkim_status == 'FAIL' %}bg-danger-subtle text-danger border border-danger-subtle{% else %}bg-light text-secondary border{% endif %}">DKIM: {{ scan.dkim_status or 'N/A' }}</span>
+                                                <span class="badge {% if scan.spf_status == 'pass' %}bg-success-subtle text-success border border-success-subtle{% elif scan.spf_status == 'fail' %}bg-danger-subtle text-danger border border-danger-subtle{% else %}bg-light text-secondary border{% endif %}">SPF: {{ scan.spf_status or 'N/A' }}</span>
+                                                <span class="badge {% if scan.dmarc_status == 'pass' %}bg-success-subtle text-success border border-success-subtle{% elif scan.dmarc_status == 'fail' %}bg-danger-subtle text-danger border border-danger-subtle{% else %}bg-light text-secondary border{% endif %}">DMARC: {{ scan.dmarc_status or 'N/A' }}</span>
+                                                <span class="badge {% if scan.smime_status == 'VALID' %}bg-info-subtle text-info-emphasis border border-info-subtle{% elif scan.smime_status == 'INVALID' %}bg-danger-subtle text-danger border border-danger-subtle{% else %}bg-light text-secondary border{% endif %}">S/MIME: {{ scan.smime_status or 'N/A' }}</span>
+                                            </div>
+                                        </td>
+                                        <td class="pe-4 text-end font-monospace text-muted fs-9" title="{{ scan.file_sha256 }}">
+                                            {{ scan.file_sha256[:10] }}...
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="p-5 text-center text-secondary">
+                        <i class="bi bi-inbox fs-1 text-muted d-block mb-3"></i>
+                        <h6 class="fw-bold">No Scans Recorded</h6>
+                        <p class="fs-8 text-muted mb-0">User {{ target_user.username }} has not performed any email security analyses yet.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

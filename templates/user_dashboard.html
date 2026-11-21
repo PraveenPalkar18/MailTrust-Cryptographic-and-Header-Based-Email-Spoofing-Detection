@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}User Dashboard — MailTrust{% endblock %}
+{% block title %}{% if is_guest %}Guest Dashboard (Stateless){% else %}User Dashboard{% endif %} — MailTrust{% endblock %}
 
 {% block content %}
 <div class="row g-4">
@@ -8,111 +8,213 @@
     <div class="col-12">
         <div class="card card-enterprise p-4">
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="brand-mark" style="width: 52px; height: 52px; font-size: 1.5rem;">
-                        <i class="bi bi-person-badge"></i>
-                    </div>
-                    <div>
-                        <h4 class="fw-bold text-dark mb-1">{{ user.username }}</h4>
-                        <div class="d-flex align-items-center gap-2 text-secondary fs-8">
-                            <span><i class="bi bi-envelope me-1"></i>{{ user.email }}</span>
-                            <span>•</span>
-                            <span class="badge {% if user.role == 'ADMIN' %}bg-primary{% else %}bg-secondary{% endif %}">{{ user.role }}</span>
-                            <span>•</span>
-                            <span>MFA: {% if user.totp_enabled %}<span class="text-success fw-semibold"><i class="bi bi-shield-check"></i> Enabled</span>{% else %}<span class="text-warning fw-semibold"><i class="bi bi-shield-slash"></i> Disabled</span>{% endif %}</span>
+                {% if is_guest %}
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="brand-mark bg-secondary-subtle text-secondary" style="width: 52px; height: 52px; font-size: 1.5rem;">
+                            <i class="bi bi-shield-slash"></i>
+                        </div>
+                        <div>
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <h4 class="fw-bold text-dark mb-0">Forensic Analytics Dashboard</h4>
+                                <span class="badge bg-secondary">Guest (Stateless)</span>
+                            </div>
+                            <div class="text-secondary fs-8">
+                                Stateless analysis mode. No scan history is stored or displayed for unauthenticated sessions.
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="d-flex gap-2">
-                    <a href="{{ url_for('account') }}" class="btn btn-sm btn-outline-secondary">
-                        <i class="bi bi-gear me-1"></i> Account Settings
-                    </a>
-                    <a href="{{ url_for('index') }}#analyze-section" class="btn btn-sm btn-enterprise">
-                        <i class="bi bi-plus-lg me-1"></i> New Analysis
-                    </a>
-                </div>
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('login') }}" class="btn btn-sm btn-primary btn-enterprise">
+                            <i class="bi bi-box-arrow-in-right me-1"></i> Sign In to Save Scans
+                        </a>
+                        <a href="{{ url_for('register') }}" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-person-plus me-1"></i> Register
+                        </a>
+                    </div>
+                {% else %}
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="brand-mark" style="width: 52px; height: 52px; font-size: 1.5rem;">
+                            <i class="bi bi-person-badge"></i>
+                        </div>
+                        <div>
+                            <h4 class="fw-bold text-dark mb-1">{{ user.username }}</h4>
+                            <div class="d-flex align-items-center gap-2 text-secondary fs-8">
+                                <span><i class="bi bi-envelope me-1"></i>{{ user.email }}</span>
+                                <span>•</span>
+                                <span class="badge {% if user.role == 'ADMIN' %}bg-primary{% else %}bg-secondary{% endif %}">{{ user.role }}</span>
+                                <span>•</span>
+                                <span>MFA: {% if user.totp_enabled %}<span class="text-success fw-semibold"><i class="bi bi-shield-check"></i> Enabled</span>{% else %}<span class="text-warning fw-semibold"><i class="bi bi-shield-slash"></i> Disabled</span>{% endif %}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('account') }}" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-gear me-1"></i> Account Settings
+                        </a>
+                        <a href="{{ url_for('index') }}" class="btn btn-sm btn-enterprise">
+                            <i class="bi bi-plus-lg me-1"></i> New Analysis
+                        </a>
+                    </div>
+                {% endif %}
             </div>
         </div>
     </div>
 
-    <!-- Forensic History Table -->
-    <div class="col-12">
-        <div class="card card-enterprise">
-            <div class="card-enterprise-header d-flex justify-content-between align-items-center py-3 px-4 border-bottom">
-                <div class="d-flex align-items-center gap-2">
-                    <i class="bi bi-clock-history text-primary"></i>
-                    <h6 class="fw-bold text-dark mb-0">Personal Forensic Scan History</h6>
+    {% if is_guest %}
+        <!-- Guest Stateless Section -->
+        <div class="col-12 col-lg-8">
+            <div class="card card-enterprise">
+                <div class="card-enterprise-header py-3 px-4 border-bottom d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-cpu text-primary"></i>
+                        <h6 class="fw-bold text-dark mb-0">Stateless Email Inspector</h6>
+                    </div>
+                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle font-monospace">In-Memory Only</span>
                 </div>
-                <span class="badge bg-light text-secondary border font-monospace">{{ total_scans }} Recorded Scans</span>
-            </div>
-            
-            <div class="card-body p-0">
-                {% if scans %}
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0 fs-8">
-                            <thead class="table-light">
-                                <tr>
-                                    <th class="ps-4">Timestamp</th>
-                                    <th>Subject &amp; Domain</th>
-                                    <th>Verdict</th>
-                                    <th>Risk Score</th>
-                                    <th>Protocols (DKIM / SPF / DMARC / S/MIME)</th>
-                                    <th class="pe-4 text-end">File SHA-256</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for scan in scans %}
-                                    <tr>
-                                        <td class="ps-4 text-nowrap text-secondary font-monospace fs-9">
-                                            {{ scan.created_at.strftime('%Y-%m-%d %H:%M') }}
-                                        </td>
-                                        <td>
-                                            <div class="fw-semibold text-dark">{{ scan.subject_preview }}</div>
-                                            <div class="text-muted fs-9">{{ scan.sender_domain or scan.from_address or 'Unknown sender' }}</div>
-                                        </td>
-                                        <td>
-                                            <span class="badge bg-{{ scan.verdict_badge_class }}-subtle text-{{ scan.verdict_badge_class }} border border-{{ scan.verdict_badge_class }}-subtle">
-                                                {{ scan.verdict }}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <div class="d-flex align-items-center gap-2">
-                                                <div class="progress flex-grow-1" style="height: 6px; width: 60px;">
-                                                    <div class="progress-bar bg-{{ scan.verdict_badge_class }}" style="width: {{ scan.risk_score }}%;"></div>
-                                                </div>
-                                                <span class="font-monospace fw-bold fs-9">{{ scan.risk_score }}</span>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="d-flex gap-1 font-monospace fs-9">
-                                                <span class="badge {% if scan.dkim_status == 'PASS' %}bg-success-subtle text-success border border-success-subtle{% elif scan.dkim_status == 'FAIL' %}bg-danger-subtle text-danger border border-danger-subtle{% else %}bg-light text-secondary border{% endif %}">DKIM: {{ scan.dkim_status or 'N/A' }}</span>
-                                                <span class="badge {% if scan.spf_status == 'pass' %}bg-success-subtle text-success border border-success-subtle{% elif scan.spf_status == 'fail' %}bg-danger-subtle text-danger border border-danger-subtle{% else %}bg-light text-secondary border{% endif %}">SPF: {{ scan.spf_status or 'N/A' }}</span>
-                                                <span class="badge {% if scan.dmarc_status == 'pass' %}bg-success-subtle text-success border border-success-subtle{% elif scan.dmarc_status == 'fail' %}bg-danger-subtle text-danger border border-danger-subtle{% else %}bg-light text-secondary border{% endif %}">DMARC: {{ scan.dmarc_status or 'N/A' }}</span>
-                                                <span class="badge {% if scan.smime_status == 'VALID' %}bg-info-subtle text-info-emphasis border border-info-subtle{% elif scan.smime_status == 'INVALID' %}bg-danger-subtle text-danger border border-danger-subtle{% else %}bg-light text-secondary border{% endif %}">S/MIME: {{ scan.smime_status or 'N/A' }}</span>
-                                            </div>
-                                        </td>
-                                        <td class="pe-4 text-end font-monospace text-muted fs-9" title="{{ scan.file_sha256 }}">
-                                            {{ scan.file_sha256[:10] }}...
-                                        </td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                {% else %}
-                    <div class="text-center py-5 text-secondary">
-                        <i class="bi bi-inbox fs-2 text-muted mb-2 d-block"></i>
-                        <p class="mb-2">No email forensic scans recorded under your account yet.</p>
-                        <a href="{{ url_for('index') }}#analyze-section" class="btn btn-sm btn-primary">Run First Analysis</a>
-                    </div>
-                {% endif %}
-            </div>
-            
-            <div class="card-footer bg-light border-top py-2 px-4 d-flex justify-content-between align-items-center fs-9 text-muted">
-                <span><i class="bi bi-shield-check text-success me-1"></i>Privacy Policy: Only cryptographic verdicts, SHA-256 fingerprints, and metadata are persisted.</span>
-                <span>Retention: {{ config.ANALYSIS_RETENTION_DAYS }} Days</span>
+                <div class="card-body p-4">
+                    <p class="fs-8 text-secondary mb-3">
+                        As a <strong>guest</strong>, you can inspect any email header or <code>.eml</code> file. Your data is analyzed in memory and immediately discarded. Neither your scan nor other users' scans are displayed.
+                    </p>
+
+                    <!-- Stateless Form -->
+                    <form method="POST" action="{{ url_for('analyze') }}" enctype="multipart/form-data">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        <div class="mb-3">
+                            <label class="form-label fs-8 fw-semibold text-secondary">Upload RFC 5322 Email File (.eml)</label>
+                            <input type="file" name="email_file" class="form-control fs-8" accept=".eml,.txt,.msg">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fs-8 fw-semibold text-secondary">Or Paste Raw Email Headers / Source</label>
+                            <textarea name="raw_email_text" class="form-control font-monospace fs-9" rows="5" placeholder="From: sender@example.com&#10;To: recipient@example.com&#10;Subject: Security Notice&#10;DKIM-Signature: v=1; a=rsa-sha256; ..."></textarea>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <button type="submit" class="btn btn-primary btn-enterprise px-4">
+                                <i class="bi bi-shield-check me-1"></i> Analyze Statelessly
+                            </button>
+                            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary fs-8">
+                                Go to Full Workbench <i class="bi bi-arrow-right ms-1"></i>
+                            </a>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
-    </div>
+
+        <div class="col-12 col-lg-4">
+            <div class="card card-enterprise h-100">
+                <div class="card-enterprise-header py-3 px-4 border-bottom">
+                    <h6 class="fw-bold text-dark mb-0"><i class="bi bi-database-lock text-primary me-2"></i>Persistent Storage Benefits</h6>
+                </div>
+                <div class="card-body p-4 fs-8">
+                    <div class="d-flex gap-3 mb-3">
+                        <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                        <div>
+                            <strong>Permanent Scan History</strong>
+                            <div class="text-muted fs-9">Scans are safely recorded in MongoDB Atlas under your personal account.</div>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-3 mb-3">
+                        <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                        <div>
+                            <strong>Tamper-Evident Evidence</strong>
+                            <div class="text-muted fs-9">Export cryptographically signed forensic reports (Ed25519).</div>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-3 mb-3">
+                        <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                        <div>
+                            <strong>Role-Based Access</strong>
+                            <div class="text-muted fs-9">Admins can manage platform users and inspect SHA-256 audit logs.</div>
+                        </div>
+                    </div>
+                    <div class="d-grid gap-2 mt-4">
+                        <a href="{{ url_for('register') }}" class="btn btn-sm btn-primary">Create Free Account</a>
+                        <a href="{{ url_for('login') }}" class="btn btn-sm btn-outline-secondary">Sign In with Existing Account</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    {% else %}
+        <!-- Authenticated User Forensic History Table -->
+        <div class="col-12">
+            <div class="card card-enterprise">
+                <div class="card-enterprise-header d-flex justify-content-between align-items-center py-3 px-4 border-bottom">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-clock-history text-primary"></i>
+                        <h6 class="fw-bold text-dark mb-0">Personal Forensic Scan History</h6>
+                    </div>
+                    <span class="badge bg-light text-secondary border font-monospace">{{ total_scans }} Recorded Scans</span>
+                </div>
+                
+                <div class="card-body p-0">
+                    {% if scans %}
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0 fs-8">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="ps-4">Timestamp</th>
+                                        <th>Subject &amp; Domain</th>
+                                        <th>Verdict</th>
+                                        <th>Risk Score</th>
+                                        <th>Protocols (DKIM / SPF / DMARC / S/MIME)</th>
+                                        <th class="pe-4 text-end">File SHA-256</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for scan in scans %}
+                                        <tr>
+                                            <td class="ps-4 text-nowrap text-secondary font-monospace fs-9">
+                                                {{ scan.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                            </td>
+                                            <td>
+                                                <div class="fw-semibold text-dark">{{ scan.subject_preview or '(No Subject)' }}</div>
+                                                <div class="text-muted fs-9">{{ scan.sender_domain or scan.from_address or 'Unknown sender' }}</div>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-{{ scan.verdict_badge_class }}-subtle text-{{ scan.verdict_badge_class }} border border-{{ scan.verdict_badge_class }}-subtle">
+                                                    {{ scan.verdict }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <div class="progress flex-grow-1" style="height: 6px; width: 60px;">
+                                                        <div class="progress-bar bg-{{ scan.verdict_badge_class }}" style="width: {{ scan.risk_score }}%;"></div>
+                                                    </div>
+                                                    <span class="font-monospace fw-bold fs-9">{{ scan.risk_score }}</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex gap-1 font-monospace fs-9">
+                                                    <span class="badge {% if scan.dkim_status == 'PASS' %}bg-success-subtle text-success border border-success-subtle{% elif scan.dkim_status == 'FAIL' %}bg-danger-subtle text-danger border border-danger-subtle{% else %}bg-light text-secondary border{% endif %}">DKIM: {{ scan.dkim_status or 'N/A' }}</span>
+                                                    <span class="badge {% if scan.spf_status == 'pass' %}bg-success-subtle text-success border border-success-subtle{% elif scan.spf_status == 'fail' %}bg-danger-subtle text-danger border border-danger-subtle{% else %}bg-light text-secondary border{% endif %}">SPF: {{ scan.spf_status or 'N/A' }}</span>
+                                                    <span class="badge {% if scan.dmarc_status == 'pass' %}bg-success-subtle text-success border border-success-subtle{% elif scan.dmarc_status == 'fail' %}bg-danger-subtle text-danger border border-danger-subtle{% else %}bg-light text-secondary border{% endif %}">DMARC: {{ scan.dmarc_status or 'N/A' }}</span>
+                                                    <span class="badge {% if scan.smime_status == 'VALID' %}bg-info-subtle text-info-emphasis border border-info-subtle{% elif scan.smime_status == 'INVALID' %}bg-danger-subtle text-danger border border-danger-subtle{% else %}bg-light text-secondary border{% endif %}">S/MIME: {{ scan.smime_status or 'N/A' }}</span>
+                                                </div>
+                                            </td>
+                                            <td class="pe-4 text-end font-monospace text-muted fs-9" title="{{ scan.file_sha256 }}">
+                                                {{ scan.file_sha256[:10] }}...
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5 text-secondary">
+                            <i class="bi bi-inbox fs-2 text-muted mb-2 d-block"></i>
+                            <p class="mb-2">No email forensic scans recorded under your account yet.</p>
+                            <a href="{{ url_for('index') }}" class="btn btn-sm btn-primary">Run First Analysis</a>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="card-footer bg-light border-top py-2 px-4 d-flex justify-content-between align-items-center fs-9 text-muted">
+                    <span><i class="bi bi-shield-check text-success me-1"></i>Privacy Policy: Only cryptographic verdicts, SHA-256 fingerprints, and metadata are persisted.</span>
+                    <span>Stored in MongoDB Atlas</span>
+                </div>
+            </div>
+        </div>
+    {% endif %}
 </div>
 {% endblock %}

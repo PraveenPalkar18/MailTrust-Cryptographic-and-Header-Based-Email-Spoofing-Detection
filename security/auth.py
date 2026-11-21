@@ -166,8 +166,14 @@ def load_authenticated_user():
     g.current_session = None
     g.csrf_token = None
     
-    raw_token = request.cookies.get(Config.SESSION_COOKIE_NAME)
-    if not raw_token:
+    raw_token = (
+        request.cookies.get(getattr(Config, "AUTH_COOKIE_NAME", "mailtrust_auth_token")) or
+        request.cookies.get(getattr(Config, "SESSION_COOKIE_NAME", "mailtrust_auth_token")) or
+        request.cookies.get("mailtrust_auth_token") or
+        request.cookies.get("mailtrust_session") or
+        request.cookies.get("mailtrust_flask_session")
+    )
+    if not raw_token or raw_token.startswith("eyJf"):
         return
     
     token_h = hash_token(raw_token)
