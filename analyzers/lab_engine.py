@@ -11,6 +11,11 @@ from cryptography.hazmat.primitives import serialization
 import dkim
 
 from .dkim_analyzer import verify_dkim_signatures
+from .sha256 import custom_sha256
+
+# Ensure custom from-scratch SHA-256 is used for DKIM signing and verification
+dkim.HASH_ALGORITHMS[b"rsa-sha256"] = custom_sha256
+dkim.HASH_ALGORITHMS[b"ed25519-sha256"] = custom_sha256
 
 
 def generate_lab_keypair(key_size: int = 2048) -> Tuple[bytes, str, str]:

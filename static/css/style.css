@@ -1,60 +1,83 @@
-/* MailTrust — Modern Security SaaS Design System */
+/* ==========================================================================
+   MailTrust Design System — Production Cybersecurity SaaS Interface
+   Inspired by Cloudflare, Linear, GitHub, and Stripe Dashboard
+   ========================================================================== */
 
 :root {
-    --bg-page: #f8fafc;
-    --bg-card: #ffffff;
-    --bg-subtle: #f1f5f9;
-    --bg-hover: #f8fafc;
-    
+    /* Canvas & Surfaces */
+    --canvas-bg: #f8fafc;
+    --surface-bg: #ffffff;
+    --surface-subtle: #f1f5f9;
+    --surface-hover: #f8fafc;
+    --surface-active: #e2e8f0;
+
+    /* Borders */
     --border-color: #e2e8f0;
     --border-subtle: #cbd5e1;
-    --border-focus: #2563eb;
-    
+    --border-dark: #94a3b8;
+    --border-focus: #0f172a;
+
+    /* Typography Colors */
     --text-primary: #0f172a;
-    --text-secondary: #475569;
+    --text-secondary: #334155;
     --text-muted: #64748b;
-    --text-light: #94a3b8;
-    
+    --text-subtle: #94a3b8;
+
+    /* Brand & Accent (Restrained Navy / Slate) */
     --brand-navy: #0f172a;
-    --brand-blue: #2563eb;
-    --brand-blue-hover: #1d4ed8;
-    --brand-blue-subtle: #eff6ff;
-    
-    --success: #16a34a;
-    --success-bg: #f0fdf4;
-    --success-border: #bbf7d0;
-    --success-text: #15803d;
-    
-    --warning: #d97706;
-    --warning-bg: #fffbeb;
-    --warning-border: #fde68a;
-    --warning-text: #b45309;
-    
-    --danger: #dc2626;
-    --danger-bg: #fef2f2;
-    --danger-border: #fecaca;
-    --danger-text: #b91c1c;
-    
-    --neutral-badge-bg: #f1f5f9;
-    --neutral-badge-text: #475569;
-    --neutral-badge-border: #cbd5e1;
-    
+    --brand-navy-hover: #1e293b;
+    --accent-blue: #2563eb;
+    --accent-blue-subtle: #eff6ff;
+    --accent-blue-border: #bfdbfe;
+
+    /* Status Tokens — Authoritative & Muted (No Neon) */
+    --status-success-text: #15803d;
+    --status-success-bg: #f0fdf4;
+    --status-success-border: #bbf7d0;
+    --status-success-dot: #16a34a;
+
+    --status-warning-text: #92400e;
+    --status-warning-bg: #fffbeb;
+    --status-warning-border: #fde68a;
+    --status-warning-dot: #d97706;
+
+    --status-danger-text: #991b1b;
+    --status-danger-bg: #fef2f2;
+    --status-danger-border: #fecaca;
+    --status-danger-dot: #dc2626;
+
+    --status-neutral-text: #475569;
+    --status-neutral-bg: #f1f5f9;
+    --status-neutral-border: #cbd5e1;
+    --status-neutral-dot: #64748b;
+
+    /* Typography Families */
     --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     --font-mono: 'JetBrains Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    
-    --radius-sm: 6px;
-    --radius-md: 8px;
-    --radius-lg: 12px;
-    --shadow-subtle: 0 1px 3px 0 rgba(15, 23, 42, 0.05), 0 1px 2px -1px rgba(15, 23, 42, 0.05);
-    --shadow-card: 0 1px 3px 0 rgba(15, 23, 42, 0.08);
+
+    /* Geometric Radii — Strict & Professional (No 9999px Pills) */
+    --radius-xs: 2px;
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 8px;
+
+    /* Elevation — Subtle, Flat, Crisp (No Heavy Shadows) */
+    --shadow-subtle: 0 1px 2px rgba(15, 23, 42, 0.04);
+    --shadow-card: 0 1px 3px rgba(15, 23, 42, 0.05);
 }
 
+/* ==========================================================================
+   Base & Reset
+   ========================================================================== */
+
 body {
-    background-color: var(--bg-page) !important;
+    background-color: var(--canvas-bg) !important;
     font-family: var(--font-sans);
     color: var(--text-primary);
     line-height: 1.5;
+    font-size: 0.875rem;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 /* Typography Utilities */
@@ -62,313 +85,510 @@ body {
     font-family: var(--font-mono) !important;
 }
 
-.fs-7 { font-size: 0.925rem; }
-.fs-8 { font-size: 0.825rem; }
+.fs-7 { font-size: 0.875rem; }
+.fs-8 { font-size: 0.8125rem; }
 .fs-9 { font-size: 0.75rem; }
 
 .tracking-tight {
+    letter-spacing: -0.015em;
+}
+
+/* ==========================================================================
+   Header & Navigation (Sleek 52px Bar)
+   ========================================================================== */
+
+.navbar-enterprise {
+    background-color: #ffffff;
+    border-bottom: 1px solid var(--border-color);
+    padding: 0 1.25rem;
+    min-height: 52px;
+}
+
+.navbar-brand-enterprise {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    color: var(--text-primary);
+    font-weight: 700;
+    font-size: 0.95rem;
     letter-spacing: -0.02em;
 }
 
-/* Navbar */
-.navbar-clean {
-    background-color: #ffffff;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.navbar-brand-name {
-    font-weight: 700;
-    font-size: 1.15rem;
-    color: var(--brand-navy);
-    letter-spacing: -0.025em;
-}
-
-.navbar-brand-name span {
-    color: var(--brand-blue);
-}
-
-.nav-link-saas {
-    font-weight: 500;
-    color: var(--text-secondary);
-    padding: 0.5rem 0.85rem !important;
+.brand-mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    background-color: var(--brand-navy);
+    color: #ffffff;
     border-radius: var(--radius-sm);
-    transition: all 0.15s ease-in-out;
+    font-size: 0.9rem;
 }
 
-.nav-link-saas:hover {
-    color: var(--brand-navy);
-    background-color: var(--bg-subtle);
-}
-
-.nav-link-saas.active {
-    color: var(--brand-blue) !important;
-    background-color: var(--brand-blue-subtle);
+.brand-version {
+    font-size: 0.7rem;
     font-weight: 600;
+    color: var(--text-muted);
+    padding: 0.15rem 0.4rem;
+    background-color: var(--surface-subtle);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-xs);
+    letter-spacing: 0.02em;
 }
 
-/* Subtle Privacy Banner */
-.privacy-notice-bar {
-    background-color: #ffffff;
-    border-bottom: 1px solid var(--border-color);
-    font-size: 0.825rem;
-    color: var(--text-secondary);
+.nav-link-enterprise {
+    color: var(--text-secondary) !important;
+    font-weight: 500;
+    font-size: 0.8125rem;
+    padding: 0.85rem 0.85rem !important;
+    border-bottom: 2px solid transparent;
+    transition: color 0.12s ease, border-color 0.12s ease;
+    text-decoration: none;
 }
 
-/* Modern Clean Card Component */
-.card-saas {
-    background-color: var(--bg-card);
+.nav-link-enterprise:hover {
+    color: var(--text-primary) !important;
+}
+
+.nav-link-enterprise.active {
+    color: var(--brand-navy) !important;
+    font-weight: 600;
+    border-bottom-color: var(--brand-navy);
+}
+
+.nav-status-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    padding: 0.25rem 0.6rem;
+    background-color: var(--surface-subtle);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+}
+
+/* ==========================================================================
+   Structural Cards & Panels
+   ========================================================================== */
+
+.card-enterprise {
+    background-color: var(--surface-bg);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-subtle);
 }
 
-.card-header-clean {
-    background-color: #ffffff;
+.card-enterprise-header {
+    background-color: var(--surface-bg);
     border-bottom: 1px solid var(--border-color);
-    padding: 1rem 1.25rem;
+    padding: 0.85rem 1.25rem;
 }
 
-/* Hero Section */
-.hero-header {
-    font-size: 2.25rem;
-    font-weight: 800;
-    color: var(--brand-navy);
-    line-height: 1.2;
-    letter-spacing: -0.03em;
-}
+/* ==========================================================================
+   Status Indicators & Badges (Clean Square/Subtle Radii with Dot)
+   ========================================================================== */
 
-.hero-subtitle {
-    font-size: 1.05rem;
-    color: var(--text-secondary);
-    max-width: 680px;
-    margin: 0 auto;
-}
-
-/* Input Method Tabs */
-.input-tabs-clean .nav-link {
-    font-size: 0.875rem;
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.2rem 0.55rem;
+    border-radius: var(--radius-xs);
+    font-family: var(--font-mono);
+    font-size: 0.725rem;
     font-weight: 600;
-    color: var(--text-secondary);
+    line-height: 1.2;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
     border: 1px solid transparent;
-    padding: 0.6rem 1.25rem;
-    border-radius: var(--radius-sm);
+}
+
+.status-badge-success {
+    background-color: var(--status-success-bg);
+    color: var(--status-success-text);
+    border-color: var(--status-success-border);
+}
+
+.status-badge-warning {
+    background-color: var(--status-warning-bg);
+    color: var(--status-warning-text);
+    border-color: var(--status-warning-border);
+}
+
+.status-badge-danger {
+    background-color: var(--status-danger-bg);
+    color: var(--status-danger-text);
+    border-color: var(--status-danger-border);
+}
+
+.status-badge-neutral {
+    background-color: var(--status-neutral-bg);
+    color: var(--status-neutral-text);
+    border-color: var(--status-neutral-border);
+}
+
+/* Backward-compatible alias for existing templates */
+.status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.2rem 0.55rem;
+    border-radius: var(--radius-xs) !important;
+    font-family: var(--font-mono);
+    font-size: 0.725rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+.status-pill-success {
+    background-color: var(--status-success-bg);
+    color: var(--status-success-text);
+    border: 1px solid var(--status-success-border);
+}
+
+.status-pill-warning {
+    background-color: var(--status-warning-bg);
+    color: var(--status-warning-text);
+    border: 1px solid var(--status-warning-border);
+}
+
+.status-pill-danger {
+    background-color: var(--status-danger-bg);
+    color: var(--status-danger-text);
+    border: 1px solid var(--status-danger-border);
+}
+
+.status-pill-neutral {
+    background-color: var(--status-neutral-bg);
+    color: var(--status-neutral-text);
+    border: 1px solid var(--status-neutral-border);
+}
+
+.status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+.status-dot-success { background-color: var(--status-success-dot); }
+.status-dot-warning { background-color: var(--status-warning-dot); }
+.status-dot-danger { background-color: var(--status-danger-dot); }
+.status-dot-neutral { background-color: var(--status-neutral-dot); }
+
+/* ==========================================================================
+   Navigation Tabs (Linear / GitHub Style)
+   ========================================================================== */
+
+.tabs-enterprise {
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    gap: 1.5rem;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.tabs-enterprise .nav-link {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    padding: 0.65rem 0.2rem;
+    border: none;
+    border-bottom: 2px solid transparent;
     background: transparent;
-    transition: all 0.15s ease;
-}
-
-.input-tabs-clean .nav-link:hover {
-    color: var(--brand-navy);
-    background-color: var(--bg-subtle);
-}
-
-.input-tabs-clean .nav-link.active {
-    background-color: #ffffff !important;
-    color: var(--brand-blue) !important;
-    border-color: var(--border-color) !important;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-
-/* Drag-and-Drop Area */
-.dropzone-clean {
-    background-color: #ffffff;
-    border: 2px dashed #cbd5e1;
-    border-radius: var(--radius-md);
-    transition: all 0.2s ease-in-out;
     cursor: pointer;
+    border-radius: 0;
+    transition: color 0.12s ease, border-color 0.12s ease;
 }
 
-.dropzone-clean:hover, .dropzone-clean.dragover {
-    border-color: var(--brand-blue);
-    background-color: var(--brand-blue-subtle);
-}
-
-/* Form Controls */
-.form-control-saas {
-    background-color: #ffffff;
-    border: 1px solid var(--border-color);
+.tabs-enterprise .nav-link:hover {
     color: var(--text-primary);
+}
+
+.tabs-enterprise .nav-link.active {
+    color: var(--brand-navy) !important;
+    font-weight: 600;
+    border-bottom-color: var(--brand-navy) !important;
+    background: transparent !important;
+}
+
+/* ==========================================================================
+   Buttons & Form Controls
+   ========================================================================== */
+
+.btn-enterprise {
+    background-color: var(--brand-navy);
+    color: #ffffff !important;
+    border: 1px solid var(--brand-navy);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
     border-radius: var(--radius-sm);
-    font-size: 0.875rem;
-    padding: 0.625rem 0.85rem;
-    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    transition: background-color 0.12s ease, border-color 0.12s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
 }
 
-.form-control-saas:focus {
-    border-color: var(--border-focus);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-    outline: none;
+.btn-enterprise:hover:not(:disabled) {
+    background-color: var(--brand-navy-hover);
+    border-color: var(--brand-navy-hover);
 }
 
-/* Action Buttons */
+.btn-enterprise:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-enterprise-outline {
+    background-color: #ffffff;
+    color: var(--text-secondary) !important;
+    border: 1px solid var(--border-color);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    padding: 0.45rem 0.85rem;
+    border-radius: var(--radius-sm);
+    transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+}
+
+.btn-enterprise-outline:hover {
+    background-color: var(--surface-subtle);
+    color: var(--text-primary) !important;
+    border-color: var(--border-subtle);
+}
+
+/* Backward-compatible aliases */
 .btn-primary-saas {
     background-color: var(--brand-navy);
-    color: #ffffff;
+    color: #ffffff !important;
     border: 1px solid var(--brand-navy);
-    font-weight: 600;
-    border-radius: var(--radius-sm);
-    padding: 0.625rem 1.25rem;
-    transition: all 0.15s ease;
+    font-weight: 500;
+    font-size: 0.8125rem;
+    border-radius: var(--radius-sm) !important;
+    padding: 0.5rem 1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
 }
 
 .btn-primary-saas:hover:not(:disabled) {
-    background-color: #1e293b;
-    border-color: #1e293b;
-    color: #ffffff;
-}
-
-.btn-primary-saas:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
+    background-color: var(--brand-navy-hover);
+    border-color: var(--brand-navy-hover);
 }
 
 .btn-outline-saas {
     background-color: #ffffff;
-    color: var(--text-secondary);
+    color: var(--text-secondary) !important;
     border: 1px solid var(--border-color);
     font-weight: 500;
-    border-radius: var(--radius-sm);
+    font-size: 0.8125rem;
+    border-radius: var(--radius-sm) !important;
     padding: 0.45rem 0.85rem;
-    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
 }
 
 .btn-outline-saas:hover {
-    background-color: var(--bg-subtle);
-    color: var(--text-primary);
+    background-color: var(--surface-subtle);
+    color: var(--text-primary) !important;
     border-color: var(--border-subtle);
 }
 
-/* Accessible Status Badges */
-.status-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    padding: 0.25rem 0.65rem;
-    border-radius: 9999px;
-    font-size: 0.775rem;
-    font-weight: 600;
-    letter-spacing: 0.01em;
-}
-
-.status-pill-success {
-    background-color: var(--success-bg);
-    color: var(--success-text);
-    border: 1px solid var(--success-border);
-}
-
-.status-pill-warning {
-    background-color: var(--warning-bg);
-    color: var(--warning-text);
-    border: 1px solid var(--warning-border);
-}
-
-.status-pill-danger {
-    background-color: var(--danger-bg);
-    color: var(--danger-text);
-    border: 1px solid var(--danger-border);
-}
-
-.status-pill-neutral {
-    background-color: var(--neutral-badge-bg);
-    color: var(--neutral-badge-text);
-    border: 1px solid var(--neutral-badge-border);
-}
-
-/* Verdict Top Hero Banner */
-.verdict-hero {
+.form-control-enterprise,
+.form-control-saas {
     background-color: #ffffff;
     border: 1px solid var(--border-color);
-    border-radius: var(--radius-lg);
+    color: var(--text-primary);
+    border-radius: var(--radius-sm) !important;
+    font-size: 0.8125rem;
+    padding: 0.55rem 0.75rem;
+    transition: border-color 0.12s ease, box-shadow 0.12s ease;
+}
+
+.form-control-enterprise:focus,
+.form-control-saas:focus {
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.08);
+    outline: none;
+}
+
+/* ==========================================================================
+   File Dropzone (Technical & Minimalist)
+   ========================================================================== */
+
+.dropzone-enterprise,
+.dropzone-clean {
+    background-color: #ffffff;
+    border: 1px dashed var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 2.25rem 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.dropzone-enterprise:hover,
+.dropzone-enterprise.dragover,
+.dropzone-clean:hover,
+.dropzone-clean.dragover {
+    border-color: var(--brand-navy);
+    background-color: var(--surface-subtle);
+}
+
+/* ==========================================================================
+   Assessment Report & Top Verdict Banner
+   ========================================================================== */
+
+.assessment-panel {
+    background-color: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    overflow: hidden;
     box-shadow: var(--shadow-card);
 }
 
-.verdict-hero.border-success { border-left: 6px solid var(--success) !important; }
-.verdict-hero.border-warning { border-left: 6px solid var(--warning) !important; }
-.verdict-hero.border-danger { border-left: 6px solid var(--danger) !important; }
-.verdict-hero.border-secondary { border-left: 6px solid #64748b !important; }
+.assessment-status-bar {
+    height: 3px;
+    width: 100%;
+}
 
-/* Authentication Triad Cards */
-.auth-status-card {
+.assessment-status-bar.status-success { background-color: var(--status-success-dot); }
+.assessment-status-bar.status-warning { background-color: var(--status-warning-dot); }
+.assessment-status-bar.status-danger { background-color: var(--status-danger-dot); }
+.assessment-status-bar.status-neutral { background-color: var(--status-neutral-dot); }
+
+.verdict-hero {
     background-color: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md) !important;
+    box-shadow: var(--shadow-card);
+    border-left-width: 4px !important;
+}
+
+.verdict-hero.border-success { border-left-color: var(--status-success-dot) !important; }
+.verdict-hero.border-warning { border-left-color: var(--status-warning-dot) !important; }
+.verdict-hero.border-danger { border-left-color: var(--status-danger-dot) !important; }
+.verdict-hero.border-secondary { border-left-color: var(--status-neutral-dot) !important; }
+
+/* Risk Score Precision Gauge */
+.score-precision-badge {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background-color: var(--surface-subtle);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+}
+
+/* ==========================================================================
+   Protocol Evaluation Matrix (DKIM, SPF, DMARC Cards)
+   ========================================================================== */
+
+.protocol-card,
+.auth-status-card {
+    background-color: var(--surface-bg);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
     padding: 1.15rem;
-    transition: border-color 0.15s ease;
+    height: 100%;
+    display: flex;
+    flex-column: column;
+    justify-content: space-between;
 }
 
+.protocol-card:hover,
 .auth-status-card:hover {
-    border-color: #cbd5e1;
+    border-color: var(--border-subtle);
 }
 
-/* Findings List Cards */
-.finding-item {
-    background-color: #ffffff;
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
-    padding: 1rem 1.25rem;
-}
-
-.finding-item.finding-critical {
-    border-left: 4px solid var(--danger);
-}
-
-.finding-item.finding-high {
-    border-left: 4px solid var(--danger);
-}
-
-.finding-item.finding-medium {
-    border-left: 4px solid var(--warning);
-}
-
-.finding-item.finding-low {
-    border-left: 4px solid #64748b;
-}
-
-/* Technical Details Accordion */
-.accordion-clean .accordion-button {
-    background-color: #ffffff;
-    color: var(--text-primary);
-    font-size: 0.875rem;
-    font-weight: 600;
-    padding: 0.85rem 1.25rem;
-}
-
-.accordion-clean .accordion-button:not(.collapsed) {
-    background-color: var(--bg-subtle);
-    color: var(--brand-navy);
-    box-shadow: none;
-}
-
-.accordion-clean .accordion-body {
-    background-color: #ffffff;
-    padding: 1.25rem;
-    font-size: 0.85rem;
-}
-
-/* Raw Headers Code Viewer */
-.code-viewer-saas {
-    background-color: #0f172a;
-    color: #e2e8f0;
-    border-radius: var(--radius-sm);
-    padding: 1rem;
+/* Specification Key-Value Tables */
+.table-spec {
+    width: 100%;
+    font-size: 0.775rem;
     font-family: var(--font-mono);
-    font-size: 0.8rem;
-    line-height: 1.45;
-    max-height: 380px;
-    overflow-y: auto;
+    border-collapse: collapse;
 }
 
-/* Responsive Table */
+.table-spec td {
+    padding: 0.35rem 0.5rem;
+    border-bottom: 1px solid var(--surface-subtle);
+}
+
+.table-spec tr:last-child td {
+    border-bottom: none;
+}
+
+.table-spec .spec-key {
+    color: var(--text-muted);
+    font-weight: 500;
+    width: 38%;
+}
+
+.table-spec .spec-val {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+/* ==========================================================================
+   Enterprise Data Tables (Logs, Scenarios, URLs)
+   ========================================================================== */
+
+.table-enterprise {
+    width: 100%;
+    font-size: 0.8125rem;
+    color: var(--text-primary);
+    border-collapse: collapse;
+    margin: 0;
+}
+
+.table-enterprise th {
+    background-color: var(--surface-subtle);
+    color: var(--text-secondary);
+    font-size: 0.725rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    padding: 0.65rem 0.85rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.table-enterprise td {
+    padding: 0.65rem 0.85rem;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
+}
+
+.table-enterprise tbody tr:hover {
+    background-color: var(--surface-subtle);
+}
+
+/* Backward-compatible table alias */
 .table-saas {
     --bs-table-bg: transparent;
     color: var(--text-primary);
-    font-size: 0.85rem;
+    font-size: 0.8125rem;
 }
 
 .table-saas th {
+    font-size: 0.725rem;
     font-weight: 600;
-    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--text-muted);
     border-bottom: 1px solid var(--border-color);
     padding: 0.65rem 0.85rem;
+    background-color: var(--surface-subtle);
 }
 
 .table-saas td {
@@ -377,17 +597,102 @@ body {
     vertical-align: middle;
 }
 
-/* Step Badges for Authentication Lab */
-.lab-step-num {
-    width: 28px;
-    height: 28px;
-    background-color: var(--brand-navy);
-    color: #ffffff;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 0.8rem;
-    flex-shrink: 0;
+.table-saas tbody tr:hover {
+    background-color: var(--surface-subtle);
+}
+
+/* ==========================================================================
+   Forensic Terminal Code Viewer
+   ========================================================================== */
+
+.code-viewer-saas {
+    background-color: #090d16;
+    color: #e2e8f0;
+    border: 1px solid #1e293b;
+    border-radius: var(--radius-sm);
+    padding: 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.775rem;
+    line-height: 1.5;
+    max-height: 380px;
+    overflow-y: auto;
+}
+
+/* ==========================================================================
+   Threat Findings List
+   ========================================================================== */
+
+.finding-item {
+    background-color: var(--surface-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 0.85rem 1rem;
+    border-left-width: 3px !important;
+}
+
+.finding-item.finding-critical,
+.finding-item.finding-high {
+    border-left-color: var(--status-danger-dot) !important;
+}
+
+.finding-item.finding-medium {
+    border-left-color: var(--status-warning-dot) !important;
+}
+
+.finding-item.finding-low {
+    border-left-color: var(--status-neutral-dot) !important;
+}
+
+/* ==========================================================================
+   Clean Accordion
+   ========================================================================== */
+
+.accordion-clean .accordion-button {
+    background-color: #ffffff;
+    color: var(--text-primary);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    padding: 0.75rem 1rem;
+    box-shadow: none;
+}
+
+.accordion-clean .accordion-button:not(.collapsed) {
+    background-color: var(--surface-subtle);
+    color: var(--brand-navy);
+}
+
+.accordion-clean .accordion-body {
+    background-color: #ffffff;
+    padding: 1rem;
+    font-size: 0.8125rem;
+}
+
+/* ==========================================================================
+   Utility Helpers
+   ========================================================================== */
+
+.copy-btn {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    cursor: pointer;
+    text-decoration: none;
+    padding: 0.15rem 0.35rem;
+    border-radius: var(--radius-xs);
+    border: 1px solid transparent;
+    transition: all 0.12s ease;
+}
+
+.copy-btn:hover {
+    color: var(--text-primary);
+    background-color: var(--surface-subtle);
+    border-color: var(--border-color);
+}
+
+.max-w-750 { max-width: 750px; }
+.shadow-xs { box-shadow: var(--shadow-subtle); }
+.card-saas {
+    background-color: var(--surface-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-subtle);
 }

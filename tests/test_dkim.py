@@ -168,3 +168,46 @@ def test_dkim_no_signature():
     result = verify_dkim_signatures(raw_message)
     assert result.status == "NONE"
     assert result.has_signatures is False
+
+
+def test_dkim_expired_signature_passes_when_intact(rsa_keypair):
+    """
+    Demonstrate: Per RFC 6376 Section 3.5, an expired signature (x= in the past)
+    in an archived email is NOT treated as tampering. If the cryptographic RSA
+    signature and body hash are intact, it verifies successfully.
+    """
+    priv_pem, dns_record = rsa_keypair
+    raw_message = b"From: test@example.com\r\nSubject: Expired Test\r\n\r\nContent is intact"
+    
+    d = dkim.DKIM(raw_message)
+    pk = dkim.parse_pem_private_key(priv_pem)
+    canon_policy = dkim.CanonicalizationPolicy.from_c_value(b"relaxed/simple")
+    include_headers = (b"from", b"subject")
+    hasher = dkim.HASH_ALGORITHMS[b"rsa-sha256"]
+    d.hasher = hasher
+    h = hasher()
+    h.update(canon_policy.canonicalize_body(d.body))
+    bodyhash = base64.b64encode(h.digest())
+    sigfields = [
+        (b"v", b"1"),
+        (b"a", b"rsa-sha256"),
+        (b"c", b"relaxed/simple"),
+        (b"d", b"example.com"),
+        (b"q", b"dns/txt"),
+        (b"s", b"test-sel"),
+        (b"t", b"1000"),
+        (b"x", b"2000"),
+        (b"h", b"from : subject"),
+        (b"bh", bodyhash),
+        (b"b", b"0" * 60),
+    ]
+    res_header = d.gen_header(sigfields, include_headers, canon_policy, b"DKIM-Signature", pk)
+    signed_email = b"DKIM-Signature: " + res_header + raw_message
+
+    def mock_dns(name: bytes, timeout: int = 5):
+        return dns_record
+
+    result = verify_dkim_signatures(signed_email, custom_dnsfunc=mock_dns)
+    assert result.status == "PASS"
+    assert "Signature Expired" in result.signatures[0].details
+

@@ -4,99 +4,108 @@
 
 {% block content %}
 <div class="row g-4">
+    <!-- Sticky Table of Contents (Stripe / GitHub Docs Style) -->
     <div class="col-lg-3">
-        <!-- Sticky Table of Contents -->
-        <div class="card-saas sticky-top shadow-subtle" style="top: 80px;">
-            <div class="card-header-clean py-3">
-                <h6 class="mb-0 text-dark fw-bold"><i class="bi bi-list-nested text-primary me-2"></i>CNS Reference Topics</h6>
+        <div class="card-enterprise sticky-top" style="top: 72px;">
+            <div class="card-enterprise-header py-2 px-3">
+                <span class="text-muted fs-9 font-monospace text-uppercase fw-semibold">
+                    <i class="bi bi-list-nested me-1"></i> Documentation Index
+                </span>
             </div>
-            <div class="card-body p-2 fs-8 font-monospace">
-                <nav class="nav nav-pills flex-column input-tabs-clean">
-                    <a class="nav-link py-1" href="#cns-overview">1. CNS Architecture</a>
-                    <a class="nav-link py-1" href="#dkim-crypto">2. Asymmetric Crypto in DKIM</a>
-                    <a class="nav-link py-1" href="#spf-eval">3. RFC 7208 SPF Mechanism</a>
-                    <a class="nav-link py-1" href="#dmarc-align">4. RFC 7489 DMARC Alignment</a>
-                    <a class="nav-link py-1" href="#domain-heuristics">5. Homoglyphs &amp; Lookalikes</a>
-                    <a class="nav-link py-1" href="#threat-model">6. Comprehensive Threat Model</a>
-                    <a class="nav-link py-1" href="#limitations">7. Practical Limitations</a>
+            <div class="p-2">
+                <nav class="nav flex-column font-monospace fs-8">
+                    <a class="nav-link py-1 px-2 text-secondary text-truncate" href="#cns-overview">1. System Architecture</a>
+                    <a class="nav-link py-1 px-2 text-secondary text-truncate" href="#dkim-crypto">2. Asymmetric DKIM Crypto</a>
+                    <a class="nav-link py-1 px-2 text-secondary text-truncate" href="#spf-eval">3. RFC 7208 SPF Mechanism</a>
+                    <a class="nav-link py-1 px-2 text-secondary text-truncate" href="#dmarc-align">4. RFC 7489 DMARC Policy</a>
+                    <a class="nav-link py-1 px-2 text-secondary text-truncate" href="#domain-heuristics">5. Homoglyphs &amp; Deception</a>
+                    <a class="nav-link py-1 px-2 text-secondary text-truncate" href="#threat-model">6. CNS Threat Model</a>
+                    <a class="nav-link py-1 px-2 text-secondary text-truncate" href="#limitations">7. Practical Limitations</a>
                 </nav>
             </div>
         </div>
     </div>
 
-    <div class="col-lg-9">
+    <!-- Main Documentation Content -->
+    <div class="col-lg-9 d-flex flex-column gap-4">
+
         <!-- 1. CNS System Architecture -->
-        <section id="cns-overview" class="card-saas p-4 mb-4">
-            <h3 class="text-dark fw-bold border-bottom pb-2 mb-3">
-                <i class="bi bi-shield-lock-fill text-primary me-2"></i>1. CNS System Architecture
-            </h3>
-            <p class="text-secondary fs-7 leading-relaxed">
-                <strong>MailTrust</strong> is an academic Cryptography and Network Security (CNS) email authenticity engine designed to eliminate the ambiguity and unverifiability of black-box ML models. By leveraging deterministic cryptographic primitives and internet protocol specifications (RFC 6376, RFC 7208, RFC 7489), MailTrust evaluates whether incoming messages maintain cryptographic integrity, adhere to published domain sender authorizations, or exhibit structural spoofing techniques.
+        <section id="cns-overview" class="card-enterprise p-4">
+            <div class="d-flex align-items-center gap-2 mb-2 pb-2 border-bottom">
+                <i class="bi bi-shield-lock text-primary"></i>
+                <h2 class="h5 fw-bold text-dark mb-0 tracking-tight">1. CNS System Architecture</h2>
+            </div>
+            <p class="text-secondary fs-8 leading-relaxed mb-3">
+                <strong>MailTrust</strong> is a Cryptography and Network Security (CNS) email authenticity engine designed to eliminate the opacity of black-box machine learning classifiers. By implementing rigorous RFC specifications (RFC 6376, RFC 7208, RFC 7489), MailTrust evaluates whether incoming messages maintain cryptographic integrity, adhere to published domain authorizations, or exhibit structural spoofing techniques.
             </p>
             
-            <div class="p-3 bg-light rounded border font-monospace fs-8 text-dark mb-3">
-                <div class="text-primary fw-bold mb-2">// CNS Verification Pipeline</div>
-                <div>1. Input Parsing &rarr; Safe MIME structure extraction (RFC 5322 &amp; RFC 2047)</div>
+            <div class="code-viewer-saas mb-0">
+                <div class="text-info fw-bold mb-2">// CNS Deterministic Verification Pipeline</div>
+                <div>1. Input Parsing      &rarr; Safe MIME structure extraction (RFC 5322 &amp; RFC 2047)</div>
                 <div>2. Cryptographic DKIM &rarr; Asymmetric RSA/Ed25519 signature &amp; SHA-256 body hash verification</div>
-                <div>3. Network SPF &rarr; Envelope IP authorization checks &amp; mechanism recursion (RFC 7208)</div>
-                <div>4. Policy DMARC &rarr; Organizational domain alignment against RFC 5322 From (RFC 7489)</div>
-                <div>5. Domain Heuristics &rarr; Confusables, Punycode (IDN), &amp; display-name spoofing audit</div>
-                <div>6. Risk Engine &rarr; Transparent, explainable synthesis yielding one of 4 strict verdicts</div>
+                <div>3. Network SPF        &rarr; Envelope IP authorization checks &amp; mechanism recursion (RFC 7208)</div>
+                <div>4. Policy DMARC       &rarr; Organizational domain alignment against RFC 5322 From (RFC 7489)</div>
+                <div>5. Domain Heuristics  &rarr; Unicode confusables, Punycode (IDN), &amp; display-name spoofing audit</div>
+                <div>6. Risk Synthesis     &rarr; Transparent, deterministic security classification</div>
             </div>
         </section>
 
         <!-- 2. Asymmetric Crypto in DKIM -->
-        <section id="dkim-crypto" class="card-saas p-4 mb-4">
-            <h3 class="text-dark fw-bold border-bottom pb-2 mb-3">
-                <i class="bi bi-key-fill text-primary me-2"></i>2. Public-Key Cryptography in DKIM (RFC 6376)
-            </h3>
-            <p class="text-secondary fs-7">
+        <section id="dkim-crypto" class="card-enterprise p-4">
+            <div class="d-flex align-items-center gap-2 mb-2 pb-2 border-bottom">
+                <i class="bi bi-key text-primary"></i>
+                <h2 class="h5 fw-bold text-dark mb-0 tracking-tight">2. Public-Key Cryptography in DKIM (RFC 6376)</h2>
+            </div>
+            <p class="text-secondary fs-8 mb-3">
                 DomainKeys Identified Mail (DKIM) provides non-repudiation and transit integrity via asymmetric public-key cryptography.
             </p>
             <div class="row g-3 mb-3">
                 <div class="col-md-6">
-                    <div class="p-3 bg-light rounded border h-100">
-                        <strong class="text-primary d-block mb-1">Body Hash Generation ($bh$)</strong>
-                        <p class="text-secondary fs-8 mb-0">
+                    <div class="p-3 bg-light rounded-1 border h-100">
+                        <strong class="text-dark d-block fs-8 mb-1">Body Hash Generation (<code>bh=</code>)</strong>
+                        <p class="text-secondary fs-9 mb-0">
                             The message body is canonicalized (simple or relaxed) and hashed using SHA-256. The resulting digest is stored in the <code>bh=</code> tag. Any post-signing alteration of a single byte invalidates this hash.
                         </p>
                     </div>
                 </div>
                 <div class="col-md-6">
-                    <div class="p-3 bg-light rounded border h-100">
-                        <strong class="text-primary d-block mb-1">Header Signature ($b$)</strong>
-                        <p class="text-secondary fs-8 mb-0">
-                            The specified header fields (<code>h=</code>), including the <code>bh=</code> tag, are canonicalized and signed using the domain owner's private key ($K_{\text{private}}$). The signature is stored in <code>b=</code>.
+                    <div class="p-3 bg-light rounded-1 border h-100">
+                        <strong class="text-dark d-block fs-8 mb-1">Header Signature (<code>b=</code>)</strong>
+                        <p class="text-secondary fs-9 mb-0">
+                            The specified header fields (<code>h=</code>), including the <code>bh=</code> tag, are canonicalized and signed using the domain owner's private key. The signature is stored in <code>b=</code>.
                         </p>
                     </div>
                 </div>
             </div>
 
-            <div class="alert alert-light border fs-8 font-monospace">
-                <strong>Public Key DNS Resolution:</strong> Verifiers query the TXT record at:<br>
+            <div class="p-3 bg-light border rounded-1 fs-9 font-monospace mb-3">
+                <strong class="text-dark">Public Key DNS Resolution:</strong> Verifiers query the TXT record at:<br>
                 <span class="text-primary">&lt;selector&gt;._domainkey.&lt;signing-domain&gt;</span><br>
                 Record format: <code>v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQE...</code>
             </div>
 
-            <div class="p-3 bg-light rounded border">
-                <strong class="text-dark small d-block mb-1"><i class="bi bi-info-circle text-primary me-1"></i> CNS Distinction: Cryptographic Authenticity vs. Trustworthiness</strong>
+            <div class="p-3 bg-light border rounded-1">
+                <div class="text-dark fs-8 fw-semibold mb-1 d-flex align-items-center gap-1">
+                    <i class="bi bi-info-circle text-primary"></i> CNS Principle: Authenticity vs. Trustworthiness
+                </div>
                 <p class="text-secondary fs-8 mb-0">
-                    A valid DKIM signature proves only that the owner of the private key for domain <code>d=</code> authorized this message. An adversary can register <code>evil-domain.com</code>, sign malicious emails with a valid 2048-bit key, and achieve DKIM PASS. Hence, DKIM alone does <strong>not</strong> establish safety without DMARC alignment.
+                    A valid DKIM signature proves only that the holder of the private key for domain <code>d=</code> signed this message. An adversary can register <code>attacker-owned.com</code>, sign malicious emails with a valid 2048-bit key, and achieve DKIM PASS. Hence, DKIM alone does <strong>not</strong> establish safety without DMARC alignment.
                 </p>
             </div>
         </section>
 
         <!-- 3. RFC 7208 SPF Mechanism -->
-        <section id="spf-eval" class="card-saas p-4 mb-4">
-            <h3 class="text-dark fw-bold border-bottom pb-2 mb-3">
-                <i class="bi bi-hdd-network-fill text-primary me-2"></i>3. RFC 7208 SPF Evaluation &amp; Transient Limits
-            </h3>
-            <p class="text-secondary fs-7">
+        <section id="spf-eval" class="card-enterprise p-4">
+            <div class="d-flex align-items-center gap-2 mb-2 pb-2 border-bottom">
+                <i class="bi bi-hdd-network text-primary"></i>
+                <h2 class="h5 fw-bold text-dark mb-0 tracking-tight">3. RFC 7208 SPF Evaluation &amp; Transient Limits</h2>
+            </div>
+            <p class="text-secondary fs-8 mb-3">
                 Sender Policy Framework (SPF) allows a domain owner to publish a list of IP addresses authorized to send mail on behalf of their envelope sender (<code>MAIL FROM</code>).
             </p>
             
-            <h6 class="text-dark small fw-bold">Supported SPF Mechanisms &amp; Qualifiers:</h6>
-            <ul class="text-secondary fs-8">
+            <h6 class="text-dark fs-8 fw-bold mb-2">Supported SPF Mechanisms &amp; Qualifiers:</h6>
+            <ul class="text-secondary fs-8 mb-3">
                 <li><code>ip4 / ip6</code>: Direct CIDR subnet matching without DNS lookups.</li>
                 <li><code>a / mx</code>: Authorizes host IPs or mail exchangers (triggers DNS queries).</li>
                 <li><code>include</code>: Evaluates another domain's SPF record recursively.</li>
@@ -104,13 +113,13 @@
                 <li>Qualifiers: <code>+</code> (Pass), <code>-</code> (Fail), <code>~</code> (SoftFail), <code>?</code> (Neutral).</li>
             </ul>
 
-            <div class="alert alert-warning-subtle border fs-8">
-                <i class="bi bi-exclamation-triangle-fill text-warning me-1"></i>
-                <strong>RFC 7208 Limit Enforcement:</strong> Verifiers must terminate evaluation with <code>PERMERROR</code> if more than 10 DNS queries are required (counting <code>a</code>, <code>mx</code>, <code>include</code>, <code>exists</code>, <code>redirect</code>). MailTrust strictly enforces this limit and detects circular include loops.
+            <div class="p-3 bg-light border rounded-1 fs-8 mb-3">
+                <strong class="text-dark"><i class="bi bi-exclamation-triangle text-warning me-1"></i> RFC 7208 Limit Enforcement:</strong>
+                <span class="text-secondary">Verifiers must terminate evaluation with <code>PERMERROR</code> if more than 10 DNS queries are required (counting <code>a</code>, <code>mx</code>, <code>include</code>, <code>exists</code>, <code>redirect</code>). MailTrust strictly enforces this limit and detects circular include loops.</span>
             </div>
 
-            <div class="p-3 bg-light rounded border">
-                <strong class="text-dark d-block small mb-1">Static .EML Limitation:</strong>
+            <div class="p-3 bg-light border rounded-1">
+                <strong class="text-dark d-block fs-8 mb-1">Static .EML Limitation:</strong>
                 <p class="text-secondary fs-8 mb-0">
                     The connecting IP and envelope sender are transient SMTP protocol negotiations. In an offline <code>.eml</code> file, <code>Received:</code> headers can be spoofed by an attacker. MailTrust therefore labels SPF as <code>NOT EVALUABLE</code> unless the user provides verified SMTP connection parameters.
                 </p>
@@ -118,28 +127,29 @@
         </section>
 
         <!-- 4. RFC 7489 DMARC Alignment -->
-        <section id="dmarc-align" class="card-saas p-4 mb-4">
-            <h3 class="text-dark fw-bold border-bottom pb-2 mb-3">
-                <i class="bi bi-shield-lock-fill text-primary me-2"></i>4. RFC 7489 DMARC Alignment &amp; Domain Policy
-            </h3>
-            <p class="text-secondary fs-7">
+        <section id="dmarc-align" class="card-enterprise p-4">
+            <div class="d-flex align-items-center gap-2 mb-2 pb-2 border-bottom">
+                <i class="bi bi-shield-check text-primary"></i>
+                <h2 class="h5 fw-bold text-dark mb-0 tracking-tight">4. RFC 7489 DMARC Alignment &amp; Domain Policy</h2>
+            </div>
+            <p class="text-secondary fs-8 mb-3">
                 DMARC binds technical envelope authentication (SPF and DKIM) to the end-user visible header (RFC 5322 <code>From:</code>).
             </p>
             
             <div class="row g-3 mb-3">
                 <div class="col-md-6">
-                    <div class="p-3 bg-light rounded border h-100">
-                        <strong class="text-primary d-block mb-1">DKIM Alignment (adkim)</strong>
-                        <p class="text-secondary fs-8 mb-0">
+                    <div class="p-3 bg-light rounded-1 border h-100">
+                        <strong class="text-dark d-block fs-8 mb-1">DKIM Alignment (<code>adkim</code>)</strong>
+                        <p class="text-secondary fs-9 mb-0">
                             <strong>Relaxed (r):</strong> The DKIM <code>d=</code> domain and From domain must share the same organizational domain (e.g. <code>mail.example.com</code> aligns with <code>example.com</code>).<br>
                             <strong>Strict (s):</strong> An exact FQDN match is required.
                         </p>
                     </div>
                 </div>
                 <div class="col-md-6">
-                    <div class="p-3 bg-light rounded border h-100">
-                        <strong class="text-primary d-block mb-1">SPF Alignment (aspf)</strong>
-                        <p class="text-secondary fs-8 mb-0">
+                    <div class="p-3 bg-light rounded-1 border h-100">
+                        <strong class="text-dark d-block fs-8 mb-1">SPF Alignment (<code>aspf</code>)</strong>
+                        <p class="text-secondary fs-9 mb-0">
                             <strong>Relaxed (r):</strong> Envelope sender domain and From domain share organizational domain.<br>
                             <strong>Strict (s):</strong> Exact FQDN match required.
                         </p>
@@ -147,42 +157,43 @@
                 </div>
             </div>
 
-            <div class="p-3 bg-light rounded border text-dark font-monospace fs-8">
+            <div class="p-3 bg-light border rounded-1 text-dark font-monospace fs-8">
                 <strong class="text-primary d-block mb-1">// DMARC Decision Rule:</strong>
                 <div>DMARC_PASS = (DKIM_PASS &amp;&amp; DKIM_ALIGNED) || (SPF_PASS &amp;&amp; SPF_ALIGNED)</div>
             </div>
         </section>
 
         <!-- 5. Homoglyphs & Lookalikes -->
-        <section id="domain-heuristics" class="card-saas p-4 mb-4">
-            <h3 class="text-dark fw-bold border-bottom pb-2 mb-3">
-                <i class="bi bi-eye text-primary me-2"></i>5. Homoglyphs, Typosquatting &amp; Display-Name Spoofing
-            </h3>
-            <p class="text-secondary fs-7">
+        <section id="domain-heuristics" class="card-enterprise p-4">
+            <div class="d-flex align-items-center gap-2 mb-2 pb-2 border-bottom">
+                <i class="bi bi-eye text-primary"></i>
+                <h2 class="h5 fw-bold text-dark mb-0 tracking-tight">5. Homoglyphs, Typosquatting &amp; Display-Name Spoofing</h2>
+            </div>
+            <p class="text-secondary fs-8 mb-3">
                 Adversaries exploit human visual perception to impersonate trusted institutions without triggering standard technical authentication alerts:
             </p>
-            <div class="row g-3 mb-3">
+            <div class="row g-3 mb-0">
                 <div class="col-md-4">
-                    <div class="p-3 bg-light rounded border h-100">
-                        <strong class="text-dark small d-block mb-1">Mixed-Script Homoglyphs</strong>
+                    <div class="p-3 bg-light rounded-1 border h-100">
+                        <strong class="text-dark fs-8 d-block mb-1">Mixed-Script Homoglyphs</strong>
                         <p class="text-secondary fs-9 mb-0">
                             Substituting Latin characters with visually identical Cyrillic or Greek glyphs (e.g., Cyrillic 'а' U+0430 for Latin 'a' U+0061).
                         </p>
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="p-3 bg-light rounded border h-100">
-                        <strong class="text-dark small d-block mb-1">Punycode Encoding (IDN)</strong>
+                    <div class="p-3 bg-light rounded-1 border h-100">
+                        <strong class="text-dark fs-8 d-block mb-1">Punycode Encoding (IDN)</strong>
                         <p class="text-secondary fs-9 mb-0">
                             Internationalized Domain Names formatted with <code>xn--</code> prefix to encode non-ASCII lookalikes in DNS.
                         </p>
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="p-3 bg-light rounded border h-100">
-                        <strong class="text-dark small d-block mb-1">Display-Name Spoofing</strong>
+                    <div class="p-3 bg-light rounded-1 border h-100">
+                        <strong class="text-dark fs-8 d-block mb-1">Display-Name Spoofing</strong>
                         <p class="text-secondary fs-9 mb-0">
-                            Setting friendly display names to mimic brands (e.g. <code>"PayPal Alert" &lt;attacker@evil.com&gt;</code>).
+                            Setting friendly display names to mimic brands (e.g. <code>"Internal IT Desk" &lt;attacker@external.com&gt;</code>).
                         </p>
                     </div>
                 </div>
@@ -190,12 +201,13 @@
         </section>
 
         <!-- 6. Comprehensive Threat Model -->
-        <section id="threat-model" class="card-saas p-4 mb-4">
-            <h3 class="text-dark fw-bold border-bottom pb-2 mb-3">
-                <i class="bi bi-shield-shaded text-primary me-2"></i>6. CNS Threat Model &amp; Mitigations
-            </h3>
+        <section id="threat-model" class="card-enterprise p-4">
+            <div class="d-flex align-items-center gap-2 mb-2 pb-2 border-bottom">
+                <i class="bi bi-shield-shaded text-primary"></i>
+                <h2 class="h5 fw-bold text-dark mb-0 tracking-tight">6. CNS Threat Model &amp; Mitigations</h2>
+            </div>
             <div class="table-responsive">
-                <table class="table table-saas fs-8 font-monospace mb-0">
+                <table class="table-enterprise fs-8 font-monospace mb-0">
                     <thead>
                         <tr>
                             <th>Threat Vector</th>
@@ -205,32 +217,32 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td>Header Display Forgery</td>
+                            <td class="fw-semibold">Header Display Forgery</td>
                             <td>Arbitrary <code>From: ceo@target.com</code> injection</td>
                             <td>DMARC alignment failure &amp; DKIM cryptographic invalidation</td>
                         </tr>
                         <tr>
-                            <td>Transit Payload Modification</td>
+                            <td class="fw-semibold">Transit Payload Modification</td>
                             <td>Altering invoice or link in transit</td>
                             <td>DKIM SHA-256 body hash (<code>bh=</code>) verification failure</td>
                         </tr>
                         <tr>
-                            <td>Third-Party Signing Bypass</td>
+                            <td class="fw-semibold">Third-Party Signing Bypass</td>
                             <td>Attacker signs with their own domain key</td>
                             <td>DMARC alignment check identifies <code>d!=From</code></td>
                         </tr>
                         <tr>
-                            <td>Relay IP Spoofing</td>
+                            <td class="fw-semibold">Relay IP Spoofing</td>
                             <td>Sending from unlisted host or compromised VPS</td>
                             <td>SPF mechanism evaluation yields <code>FAIL</code> or <code>SOFTFAIL</code></td>
                         </tr>
                         <tr>
-                            <td>Visual Deception (Lookalikes)</td>
+                            <td class="fw-semibold">Visual Deception (Lookalikes)</td>
                             <td>Registering <code>paypa1.com</code> or <code>xn--...</code></td>
                             <td>Punycode detection &amp; Levenshtein brand distance heuristics</td>
                         </tr>
                         <tr>
-                            <td>Hyperlink Anchor Mismatch</td>
+                            <td class="fw-semibold">Hyperlink Anchor Mismatch</td>
                             <td>Text shows legitimate URL, href points to phishing</td>
                             <td>HTML anchor extraction and hostname divergence audit</td>
                         </tr>
@@ -240,11 +252,12 @@
         </section>
 
         <!-- 7. Practical Limitations -->
-        <section id="limitations" class="card-saas p-4">
-            <h3 class="text-dark fw-bold border-bottom pb-2 mb-3">
-                <i class="bi bi-exclamation-diamond-fill text-warning me-2"></i>7. Known Limitations &amp; False-Positive Scenarios
-            </h3>
-            <ul class="text-secondary fs-8">
+        <section id="limitations" class="card-enterprise p-4">
+            <div class="d-flex align-items-center gap-2 mb-2 pb-2 border-bottom">
+                <i class="bi bi-exclamation-diamond text-warning"></i>
+                <h2 class="h5 fw-bold text-dark mb-0 tracking-tight">7. Known Limitations &amp; Operational Caveats</h2>
+            </div>
+            <ul class="text-secondary fs-8 mb-0">
                 <li class="mb-2">
                     <strong class="text-dark">Legitimate Mailing Lists (Forwarding Breakage):</strong> Mailing lists often modify subject lines or footers, breaking DKIM body hashes. Without SRS (Sender Rewriting Scheme) or ARC (Authenticated Received Chain), legitimate list forwards can fail SPF and DKIM.
                 </li>
@@ -255,7 +268,7 @@
                     <strong class="text-dark">DNS Latency &amp; Timeouts:</strong> High-latency networks or recursive resolver throttling can produce <code>TEMPERROR</code> states, which MailTrust honestly reports without guessing.
                 </li>
                 <li class="mb-0">
-                    <strong class="text-dark">Compromised Authentic Accounts:</strong> If an attacker steals genuine credentials and sends mail through the legitimate server, SPF, DKIM, and DMARC will all pass! Only content heuristics and behavioral context can detect this scenario.
+                    <strong class="text-dark">Compromised Authentic Accounts:</strong> If an attacker steals genuine credentials and sends mail through the legitimate server, SPF, DKIM, and DMARC will all pass. Content heuristics and behavioral context are necessary to detect this scenario.
                 </li>
             </ul>
         </section>

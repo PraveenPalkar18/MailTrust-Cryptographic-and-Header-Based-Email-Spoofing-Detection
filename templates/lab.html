@@ -6,90 +6,98 @@
 <div class="d-flex flex-column gap-4">
 
     <!-- Header Section -->
-    <section class="text-center py-2">
-        <div class="badge bg-light text-dark border px-3 py-1 mb-2 rounded-pill fs-8 fw-semibold">
-            <i class="bi bi-cpu text-primary me-1"></i> Cryptography &amp; Network Security Demonstration
+    <section class="card-enterprise p-4">
+        <div class="d-flex align-items-center gap-2 mb-1">
+            <span class="status-badge status-badge-neutral">
+                <i class="bi bi-cpu me-1"></i> CNS Cryptography Workbench
+            </span>
+            <span class="text-muted fs-9 font-monospace">RFC 6376 Lab</span>
         </div>
-        <h1 class="h3 fw-bold text-dark mb-2">Interactive DKIM Authentication Lab</h1>
-        <p class="text-secondary fs-7 mb-0 max-w-700 mx-auto" style="max-width: 680px;">
-            A digital signature helps detect changes to signed email content. If a signed component changes in transit, cryptographic verification immediately fails.
+        <h1 class="h5 fw-bold text-dark mb-1 tracking-tight">Interactive DKIM Authentication Lab</h1>
+        <p class="text-secondary fs-8 mb-0 max-w-750">
+            Experiment with live 2048-bit asymmetric RSA keypair generation, SHA-256 payload canonicalization, digital signature generation, and transit tampering detection.
         </p>
     </section>
 
     <!-- Interactive Workflow Grid -->
     <div class="row g-4">
         
-        <!-- Left Column: Interactive 4-Step Simulator -->
+        <!-- Left Column: Interactive Simulator -->
         <div class="col-lg-7">
-            <div class="card-saas p-4">
+            <div class="card-enterprise">
+                <div class="card-enterprise-header py-2 px-3">
+                    <span class="text-muted fs-9 font-monospace text-uppercase fw-semibold">Interactive Signature &amp; Tamper Engine</span>
+                </div>
                 
-                <!-- Step 1: Compose Test Message -->
-                <div class="mb-4 pb-4 border-bottom">
-                    <div class="d-flex align-items-center gap-2 mb-2">
-                        <span class="lab-step-num">1</span>
-                        <h2 class="h6 fw-bold text-dark mb-0">Generate Message &amp; RSA Keypair</h2>
-                    </div>
-                    <p class="text-muted fs-8 mb-3">
-                        Compose an email payload. A real 2048-bit asymmetric RSA private key will sign the message, and the public key will be published to the simulated DNS resolver.
-                    </p>
-
-                    <div class="mb-3">
-                        <textarea id="labEmailInput" class="form-control-saas font-monospace w-100 fs-8" rows="7">{{ default_email }}</textarea>
-                    </div>
-
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span class="text-muted fs-9 font-monospace">Selector: <strong>{{ selector }}</strong> &bull; Domain: <strong>{{ domain }}</strong></span>
-                        <button type="button" class="btn btn-outline-saas btn-sm fs-8" id="btnGenKey">
-                            <i class="bi bi-arrow-repeat me-1"></i> Generate New RSA Key
-                        </button>
-                    </div>
-
-                    <!-- DNS Public Key Record Display -->
-                    <div class="mt-2 p-2 bg-light rounded border font-monospace fs-9 text-dark text-truncate" id="dnsRecordDisplay">
-                        <strong>DNS TXT:</strong> {{ dns_record }}
-                    </div>
-                </div>
-
-                <!-- Step 2: Sign Message -->
-                <div class="mb-4 pb-4 border-bottom">
-                    <div class="d-flex align-items-center justify-content-between mb-2">
-                        <div class="d-flex align-items-center gap-2">
-                            <span class="lab-step-num">2</span>
-                            <h2 class="h6 fw-bold text-dark mb-0">Compute SHA-256 Digest &amp; Sign</h2>
+                <div class="p-4">
+                    <!-- Step 1: Compose Test Message -->
+                    <div class="mb-4 pb-4 border-bottom">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <span class="badge bg-dark text-white font-monospace rounded-1 px-2 py-1 fs-9">01</span>
+                            <h2 class="h6 fw-bold text-dark mb-0">Generate Payload &amp; Ephemeral RSA Keypair</h2>
                         </div>
-                        <button type="button" class="btn btn-primary-saas btn-sm px-3 fs-8" id="btnSignEmail">
-                            <i class="bi bi-key-fill me-1"></i> Sign with Private Key
-                        </button>
-                    </div>
-                    <p class="text-muted fs-8 mb-2">
-                        The engine computes a SHA-256 body hash (<code>bh=</code>) and encrypts the header digest using the domain holder's private key ($K_{\text{private}}$).
-                    </p>
-                    <div id="signedEmailContainer" class="d-none mt-3">
-                        <label class="form-label text-dark fw-semibold small mb-1">Cryptographically Signed Email:</label>
-                        <textarea id="labSignedEmailText" class="form-control-saas font-monospace w-100 fs-9 bg-light" rows="8" readonly></textarea>
-                    </div>
-                </div>
+                        <p class="text-secondary fs-8 mb-3">
+                            Compose an RFC 5322 email payload. A real 2048-bit asymmetric RSA private key signs the message, while the public key (<code>p=</code>) is published to the session DNS simulator.
+                        </p>
 
-                <!-- Step 3 & 4: Verify and Tamper -->
-                <div>
-                    <div class="d-flex align-items-center gap-2 mb-2">
-                        <span class="lab-step-num">3</span>
-                        <h2 class="h6 fw-bold text-dark mb-0">Verify Authentic vs. Tampered State</h2>
-                    </div>
-                    <p class="text-muted fs-8 mb-3">
-                        Verify the signature in its untampered state, or simulate an adversarial in-transit modification to see cryptographic verification fail.
-                    </p>
+                        <div class="mb-3">
+                            <textarea id="labEmailInput" class="form-control-enterprise font-monospace w-100 fs-8" rows="7">{{ default_email }}</textarea>
+                        </div>
 
-                    <div class="d-flex flex-wrap gap-2 mb-3">
-                        <button type="button" class="btn btn-success btn-sm px-3 fs-8" id="btnVerifyAuthentic" disabled>
-                            <i class="bi bi-shield-check me-1"></i> Verify Authentic Signature
-                        </button>
-                        <button type="button" class="btn btn-outline-danger btn-sm px-3 fs-8" id="btnTamperPayload" disabled>
-                            <i class="bi bi-pencil-square me-1"></i> Tamper Payload ($10k &rarr; $90k)
-                        </button>
-                        <button type="button" class="btn btn-danger btn-sm px-3 fs-8" id="btnVerifyTampered" disabled>
-                            <i class="bi bi-shield-x me-1"></i> Verify Tampered Message
-                        </button>
+                        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2">
+                            <span class="text-muted fs-9 font-monospace">Selector: <strong>{{ selector }}</strong> &bull; Domain: <strong>{{ domain }}</strong></span>
+                            <button type="button" class="btn-enterprise-outline btn-sm fs-8" id="btnGenKey">
+                                <i class="bi bi-arrow-repeat"></i> Generate New RSA Key
+                            </button>
+                        </div>
+
+                        <!-- DNS Public Key Record Display -->
+                        <div class="mt-2 p-2 bg-light rounded-1 border font-monospace fs-9 text-dark text-break" id="dnsRecordDisplay">
+                            <strong class="text-muted">DNS TXT:</strong> {{ dns_record }}
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Sign Message -->
+                    <div class="mb-4 pb-4 border-bottom">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="badge bg-dark text-white font-monospace rounded-1 px-2 py-1 fs-9">02</span>
+                                <h2 class="h6 fw-bold text-dark mb-0">Compute SHA-256 Digest &amp; Sign</h2>
+                            </div>
+                            <button type="button" class="btn-enterprise btn-sm fs-8" id="btnSignEmail">
+                                <i class="bi bi-key"></i> Sign with Private Key
+                            </button>
+                        </div>
+                        <p class="text-secondary fs-8 mb-2">
+                            The engine computes a SHA-256 body hash (<code>bh=</code>) and encrypts the canonicalized header hash using the private key ($K_{\text{private}}$).
+                        </p>
+                        <div id="signedEmailContainer" class="d-none mt-3">
+                            <label class="form-label text-dark fw-semibold fs-9 font-monospace mb-1">Cryptographically Signed MIME Message:</label>
+                            <textarea id="labSignedEmailText" class="form-control-enterprise font-monospace w-100 fs-9 bg-light" rows="8" readonly></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Step 3 & 4: Verify and Tamper -->
+                    <div>
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <span class="badge bg-dark text-white font-monospace rounded-1 px-2 py-1 fs-9">03</span>
+                            <h2 class="h6 fw-bold text-dark mb-0">Evaluate Authentic vs. Tampered State</h2>
+                        </div>
+                        <p class="text-secondary fs-8 mb-3">
+                            Verify the signature in its untampered state, or simulate an in-transit adversarial modification to observe cryptographic invalidation.
+                        </p>
+
+                        <div class="d-flex flex-wrap gap-2">
+                            <button type="button" class="btn btn-success btn-sm px-3 fs-8 rounded-1" id="btnVerifyAuthentic" disabled>
+                                <i class="bi bi-shield-check me-1"></i> Verify Authentic Message
+                            </button>
+                            <button type="button" class="btn btn-outline-danger btn-sm px-3 fs-8 rounded-1" id="btnTamperPayload" disabled>
+                                <i class="bi bi-pencil-square me-1"></i> Tamper Payload ($10k &rarr; $90k)
+                            </button>
+                            <button type="button" class="btn btn-danger btn-sm px-3 fs-8 rounded-1" id="btnVerifyTampered" disabled>
+                                <i class="bi bi-shield-x me-1"></i> Verify Tampered Message
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -98,58 +106,66 @@
 
         <!-- Right Column: Verification Results & Explanatory Feedback -->
         <div class="col-lg-5">
-            <div class="card-saas p-4 h-100 d-flex flex-column justify-content-between">
+            <div class="card-enterprise h-100 d-flex flex-column justify-content-between">
                 <div>
-                    <h3 class="h6 fw-bold text-dark mb-3">
-                        <i class="bi bi-activity text-primary me-2"></i>Live Cryptographic Verification Log
-                    </h3>
-
-                    <!-- Status Display Box -->
-                    <div id="verificationResultBox" class="p-3 rounded-3 border mb-3 bg-light text-center">
-                        <i class="bi bi-shield text-muted fs-1 d-block mb-2"></i>
-                        <h6 class="text-dark fw-bold mb-1">No verification executed yet</h6>
-                        <p class="text-muted fs-8 mb-0">Follow steps 1 &amp; 2 on the left to sign the message, then click verify.</p>
+                    <div class="card-enterprise-header py-2 px-3">
+                        <span class="text-muted fs-9 font-monospace text-uppercase fw-semibold">
+                            <i class="bi bi-activity text-primary me-1"></i> Live Verification Diagnostic
+                        </span>
                     </div>
 
-                    <!-- Comparison Table -->
-                    <div class="mt-4">
-                        <h4 class="h6 fw-bold text-dark mb-2">Cryptographic Mechanism Comparison</h4>
-                        <div class="table-responsive">
-                            <table class="table table-saas mb-0 fs-8 font-monospace">
-                                <thead>
-                                    <tr>
-                                        <th>State</th>
-                                        <th>Body Hash (bh=)</th>
-                                        <th>Outcome</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td class="fw-medium">Authentic</td>
-                                        <td class="text-success"><i class="bi bi-check2"></i> Matches Digest</td>
-                                        <td><span class="status-pill status-pill-success fs-9">PASS</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="fw-medium">Tampered</td>
-                                        <td class="text-danger"><i class="bi bi-x"></i> Hash Mismatch</td>
-                                        <td><span class="status-pill status-pill-danger fs-9">FAIL</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="fw-medium">Wrong Key</td>
-                                        <td class="text-muted">&bull; Digest Invalid</td>
-                                        <td><span class="status-pill status-pill-danger fs-9">FAIL</span></td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                    <div class="p-4">
+                        <!-- Status Display Box -->
+                        <div id="verificationResultBox" class="p-4 rounded-1 border mb-4 bg-light text-center">
+                            <i class="bi bi-shield text-muted fs-3 d-block mb-2"></i>
+                            <h6 class="text-dark fw-bold mb-1 fs-8">No verification executed yet</h6>
+                            <p class="text-secondary fs-9 mb-0">Execute steps 1 &amp; 2 on the left to sign the payload, then test authenticity verification.</p>
+                        </div>
+
+                        <!-- Comparison Table -->
+                        <div class="mb-3">
+                            <div class="text-muted text-uppercase font-monospace fs-9 fw-semibold mb-2">
+                                Cryptographic State Matrix
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table-enterprise fs-9 font-monospace mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Payload State</th>
+                                            <th>Body Hash (bh=)</th>
+                                            <th>RFC Outcome</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="fw-semibold">Authentic</td>
+                                            <td class="text-success"><i class="bi bi-check2"></i> Matches Digest</td>
+                                            <td><span class="status-badge status-badge-success">PASS</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-semibold">Tampered</td>
+                                            <td class="text-danger"><i class="bi bi-x"></i> Hash Mismatch</td>
+                                            <td><span class="status-badge status-badge-danger">FAIL</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-semibold">Wrong Key</td>
+                                            <td class="text-muted">&bull; Invalid Signature</td>
+                                            <td><span class="status-badge status-badge-danger">FAIL</span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- CNS Principle Callout -->
-                <div class="p-3 bg-light rounded border mt-4">
-                    <strong class="text-dark fs-8 d-block mb-1"><i class="bi bi-lightbulb text-warning me-1"></i> CNS Principle:</strong>
-                    <p class="text-secondary fs-9 mb-0">
-                        Asymmetric signatures ensure non-repudiation: only the private key holder can create a valid signature, while anyone with the public key (DNS) can verify it. If an adversary alters even a single character in transit, the calculated hash no longer matches the encrypted digest.
+                <div class="p-3 bg-light border-top fs-8">
+                    <div class="text-dark fw-semibold mb-1 d-flex align-items-center gap-1">
+                        <i class="bi bi-lightbulb text-warning"></i> CNS Mathematical Guarantee:
+                    </div>
+                    <p class="text-secondary fs-9 mb-0 leading-relaxed">
+                        Asymmetric signatures guarantee non-repudiation: only the holder of the private key can produce a valid signature, while any recipient with the published DNS public key can verify it. Altering even a single whitespace or character in transit invalidates the computed SHA-256 body hash.
                     </p>
                 </div>
             </div>
@@ -185,8 +201,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await res.json();
             if (data.status === 'success') {
                 currentDnsRecord = data.dns_record;
-                dnsRecordDisplay.innerHTML = `<strong>DNS TXT:</strong> ${data.dns_record}`;
-                alert('New 2048-bit RSA keypair generated for this session!');
+                dnsRecordDisplay.innerHTML = `<strong class="text-muted">DNS TXT:</strong> ${data.dns_record}`;
+                alert('New 2048-bit RSA keypair generated for this session.');
             }
         } catch (e) {
             alert('Failed to generate key: ' + e);
@@ -215,7 +231,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 signedContainer.classList.remove('d-none');
                 btnVerifyAuthentic.disabled = false;
                 btnTamperPayload.disabled = false;
-                showResultBox('Ready to verify signature.', 'info', 'Message signed with real RSA private key. Signature header attached.');
+                showResultBox('Ready to verify signature', 'info', 'Message signed with real RSA private key. DKIM-Signature header attached.');
             } else {
                 alert('Signing error: ' + data.message);
             }
@@ -238,7 +254,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const tampered = originalSignedEmail.replace('$10,000', '$90,000 [TAMPERED]');
         signedTextarea.value = tampered;
         btnVerifyTampered.disabled = false;
-        showResultBox('Payload Modified', 'warning', 'The body text was modified from $10,000 to $90,000 without re-signing. Click "Verify Tampered Message" to observe cryptographic failure.');
+        showResultBox('Payload Modified in Transit', 'warning', 'The body text was modified from $10,000 to $90,000 without re-signing. Click "Verify Tampered Message" to observe cryptographic failure.');
     });
 
     // Step 4b: Verify Tampered
@@ -247,7 +263,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     async function verifyEmail(emailContent, scenario) {
-        resultBox.innerHTML = `<div class="spinner-border spinner-border-sm text-primary mb-2"></div><div class="fs-8">Executing cryptographic verification...</div>`;
+        resultBox.innerHTML = `<div class="spinner-border spinner-border-sm text-primary mb-2"></div><div class="fs-9 font-monospace">Executing cryptographic verification...</div>`;
         try {
             const res = await fetch("{{ url_for('api_lab_verify') }}", {
                 method: 'POST',
@@ -266,13 +282,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     showResultBox(
                         'PASS — Cryptographic Integrity Confirmed',
                         'success',
-                        `RSA public key matched signature. Body hash (bh=${v.body_hash.substring(0, 10)}...) is valid. Headers and content were NOT altered.`
+                        `RSA public key matched signature. Body hash (bh=${v.body_hash.substring(0, 10)}...) is intact. Headers and payload were unaltered.`
                     );
                 } else {
                     showResultBox(
-                        'FAIL — Cryptographic Verification Failed',
+                        'FAIL — Verification Failed',
                         'danger',
-                        `Computed body hash does not match signature header! Transit tampering or unauthorized alteration detected.`
+                        `Computed body hash does not match signature header digest. In-transit tampering detected.`
                     );
                 }
             }
@@ -282,12 +298,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showResultBox(title, badgeType, message) {
-        const iconClass = badgeType === 'success' ? 'bi-shield-check text-success' : (badgeType === 'danger' ? 'bi-shield-x text-danger' : 'bi-info-circle text-primary');
-        const pillClass = badgeType === 'success' ? 'status-pill-success' : (badgeType === 'danger' ? 'status-pill-danger' : 'status-pill-neutral');
+        const badgeClass = badgeType === 'success' ? 'status-badge-success' : (badgeType === 'danger' ? 'status-badge-danger' : (badgeType === 'warning' ? 'status-badge-warning' : 'status-badge-neutral'));
+        const dotClass = badgeType === 'success' ? 'status-dot-success' : (badgeType === 'danger' ? 'status-dot-danger' : (badgeType === 'warning' ? 'status-dot-warning' : 'status-dot-neutral'));
         resultBox.innerHTML = `
             <div class="d-flex align-items-center justify-content-center gap-2 mb-2">
-                <i class="bi ${iconClass} fs-4"></i>
-                <span class="status-pill ${pillClass} font-monospace">${title}</span>
+                <span class="status-badge ${badgeClass}">
+                    <span class="status-dot ${dotClass}"></span>
+                    ${title}
+                </span>
             </div>
             <p class="text-secondary fs-8 mb-0">${message}</p>
         `;

@@ -10,6 +10,11 @@ import dns.resolver
 import dns.exception
 
 from config import Config
+from .sha256 import custom_sha256
+
+# Register MailTrust's from-scratch pure Python SHA-256 implementation
+dkim.HASH_ALGORITHMS[b"rsa-sha256"] = custom_sha256
+dkim.HASH_ALGORITHMS[b"ed25519-sha256"] = custom_sha256
 
 
 class DKIMSignatureResult:
@@ -295,9 +300,52 @@ def verify_dkim_signatures(
                 )
                 all_passed = False
         except dkim.ValidationError as ve:
-            sig_res.status = "FAIL"
-            sig_res.details = f"DKIM validation error (tampering/hash mismatch): {str(ve)}"
-            all_passed = False
+            # Check if validation error is solely due to signature expiration timestamp (x= is past)
+            if "x= value is past" in str(ve):
+                # In forensic inspection of archived .eml files, the verification time is naturally
+                # past the sender's expiration window. Per RFC 6376 Section 3.5, expiration is not an
+                # indicator of tampering. We verify whether the cryptographic RSA signature and body hash
+                # are mathematically valid at the time the message was signed.
+                ref_time = None
+                if "t" in tags and tags["t"].isdigit():
+                    ref_time = int(tags["t"])
+                elif "x" in tags and tags["x"].isdigit():
+                    ref_time = int(tags["x"]) - 3600
+
+                crypto_valid = False
+                if ref_time:
+                    import unittest.mock as mock
+                    try:
+                        with mock.patch("time.time", return_value=ref_time):
+                            crypto_valid = d.verify(idx=idx, dnsfunc=dns_function)
+                    except Exception:
+                        crypto_valid = False
+
+                if crypto_valid:
+                    sig_res.status = "PASS"
+                    sig_res.details = (
+                        f"Cryptographically Verified (Signature Expired): "
+                        f"RSA key ({sig_res.public_key_k}) from {sig_res.dns_query} matches signature. "
+                        f"Headers and body hash (bh={sig_res.body_hash[:12]}...) are intact. "
+                        f"Note: Signature expiration tag (x={tags.get('x')}) has passed, which is normal for archived emails per RFC 6376."
+                    )
+                    sig_res.cryptographic_explanation = (
+                        "Integrity Verified: The signed RFC 5322 headers and body hash were unaltered. "
+                        "Message content has NOT been tampered with. Signature was valid at transmission."
+                    )
+                    sig_res.limitations = (
+                        f"The signature expiration parameter (x={tags.get('x')}) has passed. "
+                        "While mathematically authentic, senders publish expiration tags to limit long-term message replay."
+                    )
+                    any_passed = True
+                else:
+                    sig_res.status = "FAIL"
+                    sig_res.details = f"DKIM validation error (tampering/hash mismatch): {str(ve)}"
+                    all_passed = False
+            else:
+                sig_res.status = "FAIL"
+                sig_res.details = f"DKIM validation error (tampering/hash mismatch): {str(ve)}"
+                all_passed = False
         except dkim.KeyFormatError as kfe:
             sig_res.status = "PERMERROR"
             sig_res.details = f"Malformed DKIM public key in DNS: {str(kfe)}"
