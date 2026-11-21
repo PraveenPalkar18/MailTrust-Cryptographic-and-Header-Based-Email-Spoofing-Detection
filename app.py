@@ -307,6 +307,7 @@ def index():
 
 @app.route("/workbench")
 @app.route("/scan")
+@login_required
 def workbench():
     """
     Step 3: Main operation of email scan (Message Inspection Workbench).
@@ -1123,36 +1124,27 @@ def logout():
 
 
 @app.route("/dashboard")
+@login_required
 def user_dashboard():
     """
     Forensic dashboard with role-tailored view:
     - Admin: Redirects to /admin.
     - Normal User: Displays their own email scan history only.
-    - Guest: Stateless dashboard with NO scan history displayed.
+    - Unauthenticated: Blocked by @login_required and redirected to /login.
     """
-    if g.get("current_user") and g.current_user.role == "ADMIN":
+    if g.current_user.role == "ADMIN":
         return redirect(url_for("admin_dashboard"))
 
-    if g.get("current_user"):
-        with get_db() as db:
-            user_scans = db.query(AnalysisRecord).filter_by(user_id=g.current_user.id).order_by(AnalysisRecord.created_at.desc()).all()
-            total_scans = len(user_scans)
-        return render_template(
-            "user_dashboard.html",
-            user=g.current_user,
-            scans=user_scans,
-            total_scans=total_scans,
-            is_guest=False
-        )
-    else:
-        # Unauthenticated GUEST: Stateless mode. Zero history is shown.
-        return render_template(
-            "user_dashboard.html",
-            user=None,
-            scans=[],
-            total_scans=0,
-            is_guest=True
-        )
+    with get_db() as db:
+        user_scans = db.query(AnalysisRecord).filter_by(user_id=g.current_user.id).order_by(AnalysisRecord.created_at.desc()).all()
+        total_scans = len(user_scans)
+    return render_template(
+        "user_dashboard.html",
+        user=g.current_user,
+        scans=user_scans,
+        total_scans=total_scans,
+        is_guest=False
+    )
 
 
 @app.route("/admin/users/<int:user_id>/scans")

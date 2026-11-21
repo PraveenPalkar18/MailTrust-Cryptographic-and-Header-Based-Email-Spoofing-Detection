@@ -21,15 +21,12 @@ def client():
         yield c
 
 
-def test_guest_stateless_dashboard(client):
-    """Guest without login can access dashboard but cannot see any scan history (stateless)."""
-    res = client.get("/dashboard")
-    assert res.status_code == 200
-    html = res.data.decode()
-    assert "Guest" in html or "Stateless" in html
-    assert "Stateless Email Inspector" in html
-    # Guest must NOT see personal scan history or other users' history
-    assert "Personal Forensic Scan History" not in html
+def test_unauthenticated_dashboard_access_blocked(client):
+    """Unauthenticated users attempting to access /dashboard directly via URL are stopped and redirected to /login."""
+    client.get("/logout")
+    res = client.get("/dashboard", follow_redirects=False)
+    assert res.status_code == 302
+    assert "/login" in res.headers.get("Location", "")
 
 
 def test_normal_user_scan_history(client):
