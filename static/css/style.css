@@ -696,3 +696,94 @@ body {
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-subtle);
 }
+
+/* ==========================================================================
+   Enterprise Expandable Sections (Native HTML5 Details/Summary)
+   ========================================================================== */
+
+details.enterprise-details {
+    background-color: var(--surface-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    transition: border-color 0.15s ease;
+}
+
+details.enterprise-details:hover {
+    border-color: var(--border-subtle);
+}
+
+details.enterprise-details summary {
+    padding: 0.65rem 0.95rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    background-color: var(--surface-subtle);
+    user-select: none;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: background-color 0.12s ease;
+}
+
+details.enterprise-details summary:hover {
+    background-color: #e9eef5;
+    color: var(--text-primary);
+}
+
+details.enterprise-details summary::-webkit-details-marker {
+    display: none;
+}
+
+details.enterprise-details summary::after {
+    content: "\F282";
+    font-family: "bootstrap-icons";
+    font-size: 0.75rem;
+    transition: transform 0.15s ease;
+    color: var(--text-muted);
+}
+
+details.enterprise-details[open] summary::after {
+    transform: rotate(180deg);
+}
+
+details.enterprise-details .details-body {
+    padding: 0.85rem 1rem;
+    border-top: 1px solid var(--border-color);
+    background-color: #ffffff;
+}
+
+details.spec-details {
+    margin-top: 0.5rem;
+}
+
+details.spec-details summary {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--accent-blue);
+    cursor: pointer;
+    list-style: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    user-select: none;
+}
+
+details.spec-details summary::-webkit-details-marker {
+    display: none;
+}
+
+details.spec-details summary::after {
+    content: "\F282";
+    font-family: "bootstrap-icons";
+    font-size: 0.65rem;
+    transition: transform 0.15s ease;
+}
+
+details.spec-details[open] summary::after {
+    transform: rotate(180deg);
+}
+

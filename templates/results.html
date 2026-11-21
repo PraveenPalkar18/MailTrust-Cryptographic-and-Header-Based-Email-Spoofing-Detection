@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}MailTrust — Audit Report: {{ parsed_email.subject or '(No Subject)' }}{% endblock %}
+{% block title %}MailTrust — Security Report: {{ parsed_email.subject or '(No Subject)' }}{% endblock %}
 
 {% block content %}
 <div class="d-flex flex-column gap-4">
@@ -16,21 +16,30 @@
             </a>
         </div>
         <div class="d-flex align-items-center gap-2">
-            <span class="text-muted font-monospace fs-9 d-none d-sm-inline">RFC 5322 &bull; CNS Audit Report</span>
+            <form method="POST" action="{{ url_for('api_export_signed_report') }}" class="m-0">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <button type="submit" class="btn-enterprise-outline">
+                    <i class="bi bi-file-earmark-lock2 text-primary"></i> Export Signed Report (Ed25519)
+                </button>
+            </form>
             <button onclick="window.print()" class="btn-enterprise-outline">
                 <i class="bi bi-printer"></i> Print Report
             </button>
         </div>
     </div>
 
-    <!-- 1. Overall Security Assessment Hero Panel -->
+    <!-- =======================================================================
+         SECTION 1: SECURITY OVERVIEW
+         ======================================================================= -->
     <section class="assessment-panel">
         <div class="assessment-status-bar status-{{ risk.verdict_badge_class }}"></div>
-        <div class="p-4 p-md-4">
+        
+        <div class="p-4">
             <div class="row g-4 align-items-stretch">
                 <!-- Main Verdict Column -->
                 <div class="col-lg-8 d-flex flex-column justify-content-between">
                     <div>
+                        <!-- Section Badge & Protocol Stamp -->
                         <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
                             <span class="status-badge status-badge-{{ risk.verdict_badge_class }}">
                                 <span class="status-dot status-dot-{{ risk.verdict_badge_class }}"></span>
@@ -44,9 +53,11 @@
                                     Inconclusive Data
                                 {% endif %}
                             </span>
-                            <span class="text-muted fs-9 font-monospace">EVALUATION: {{ risk.verdict }}</span>
+                            <span class="text-muted fs-9 font-monospace">VERDICT: {{ risk.verdict }}</span>
+                            <span class="text-muted fs-9 font-monospace ms-auto d-none d-sm-inline">SECTION 1 &bull; SECURITY OVERVIEW</span>
                         </div>
 
+                        <!-- Primary Verdict Headline -->
                         <h1 class="h4 fw-bold text-dark mb-2 tracking-tight">
                             {% if risk.verdict == 'AUTHENTICATION VERIFIED' %}
                                 Authentication checks passed successfully.
@@ -59,27 +70,27 @@
                             {% endif %}
                         </h1>
 
-                        <!-- Plain-English Executive Summary Callout -->
+                        <!-- Executive Summary Box -->
                         <div class="p-3 mb-3 border rounded-1 bg-light fs-8">
                             <div class="d-flex align-items-start gap-2">
                                 <i class="bi {% if risk.verdict_badge_class == 'success' %}bi-shield-check text-success{% elif risk.verdict_badge_class == 'warning' %}bi-exclamation-triangle text-warning{% elif risk.verdict_badge_class == 'danger' %}bi-shield-slash text-danger{% else %}bi-question-circle text-secondary{% endif %} fs-6 mt-0"></i>
                                 <div>
                                     {% if risk.verdict == 'AUTHENTICATION VERIFIED' %}
-                                        <strong class="text-dark">Safe to trust:</strong> This email was cryptographically verified. The sender identity is genuine and message contents were not modified.
+                                        <strong class="text-dark">Safe to trust:</strong> This email was cryptographically verified. The sender identity is authentic and message contents were not modified in transit.
                                     {% elif risk.verdict == 'SUSPICIOUS' %}
-                                        <strong class="text-dark">Caution advised:</strong> Discrepancies detected (such as brand claim inconsistency or public cloud form). Verify sender before trusting links.
+                                        <strong class="text-dark">Caution advised:</strong> Discrepancies detected between claimed identity and transmission evidence. Verify sender authenticity before clicking links or executing instructions.
                                     {% elif risk.verdict == 'HIGH RISK' %}
-                                        <strong class="text-dark">High threat:</strong> Active domain spoofing, failed cryptographic signatures, or malicious indicators detected.
+                                        <strong class="text-dark">High threat:</strong> Active domain spoofing, invalid cryptographic signatures, or malicious indicators detected. Do not trust this email.
                                     {% else %}
-                                        <strong class="text-dark">Unverified origin:</strong> The sender domain has not published cryptographic (DKIM) or policy (DMARC) records.
+                                        <strong class="text-dark">Unverified origin:</strong> The sender domain has not published authoritative cryptographic (DKIM) or policy (DMARC) records.
                                     {% endif %}
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Key Forensic Evidence -->
+                        <!-- Key Forensic Evidence List -->
                         {% if risk.verdict_reasons %}
-                            <div class="p-3 bg-white rounded-1 border mb-3">
+                            <div class="p-3 bg-white rounded-1 border mb-0">
                                 <div class="text-dark fs-8 fw-semibold mb-1 d-flex align-items-center gap-1">
                                     <i class="bi bi-info-circle text-primary"></i> Key Evidence:
                                 </div>
@@ -91,31 +102,14 @@
                             </div>
                         {% endif %}
                     </div>
-
-                    <!-- Signed Evidence Export -->
-                    <div class="pt-2 border-top d-flex justify-content-end align-items-center gap-2">
-                        <form method="POST" action="{{ url_for('api_export_signed_report') }}">
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                            <button type="submit" class="btn btn-sm btn-outline-primary font-monospace fs-9 py-1 px-3">
-                                <i class="bi bi-file-earmark-lock2 me-1"></i> Export Signed Evidence (Ed25519)
-                            </button>
-                        </form>
-                    </div>
                 </div>
 
-                <!-- Risk Score Column -->
+                <!-- Quick Risk Index & Cryptographic Summary -->
                 <div class="col-lg-4 border-start-lg ps-lg-4 d-flex flex-column justify-content-between">
                     <div>
-                        <div class="text-muted text-uppercase font-monospace fs-9 fw-semibold mb-2">
-                            Security Risk Index
-                        </div>
-
-                        <div class="d-flex align-items-baseline gap-2 mb-2">
-                            <span class="h1 fw-bold font-monospace text-dark mb-0">
-                                {{ risk.calculated_risk_score }}
-                            </span>
-                            <span class="text-muted font-monospace fs-7">/ 100</span>
-                            <span class="ms-auto status-badge status-badge-{{ risk.verdict_badge_class }}">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-muted text-uppercase font-monospace fs-9 fw-semibold">Risk Index</span>
+                            <span class="status-badge status-badge-{{ risk.verdict_badge_class }}">
                                 {% if risk.calculated_risk_score == 0 and risk.verdict == 'AUTHENTICATION VERIFIED' %}
                                     Low Risk
                                 {% elif risk.calculated_risk_score >= 50 %}
@@ -128,7 +122,12 @@
                             </span>
                         </div>
 
-                        <!-- Precision Meter -->
+                        <div class="d-flex align-items-baseline gap-2 mb-2">
+                            <span class="h1 fw-bold font-monospace text-dark mb-0">{{ risk.calculated_risk_score }}</span>
+                            <span class="text-muted font-monospace fs-7">/ 100</span>
+                        </div>
+
+                        <!-- Gauge Bar -->
                         <div class="progress mb-3" style="height: 4px; background-color: var(--border-color);">
                             <div class="progress-bar {% if risk.verdict_badge_class == 'success' %}bg-success{% elif risk.verdict_badge_class == 'warning' %}bg-warning{% elif risk.verdict_badge_class == 'danger' %}bg-danger{% else %}bg-secondary{% endif %}" 
                                  role="progressbar" 
@@ -138,39 +137,44 @@
                                  aria-valuemax="100"></div>
                         </div>
 
-                        <!-- Technical State Indicators -->
+                        <!-- Protocol Status Snapshot -->
                         <div class="p-3 bg-light rounded-1 border fs-8 text-secondary font-monospace">
                             <div class="d-flex justify-content-between mb-1">
-                                <span>Crypto Alignment:</span>
-                                <strong class="{% if risk.is_cryptographically_aligned %}text-success{% else %}text-muted{% endif %}">
-                                    {{ "ALIGNED" if risk.is_cryptographically_aligned else "UNALIGNED" }}
+                                <span>DKIM:</span>
+                                <strong class="{% if dkim.status == 'PASS' %}text-success{% elif dkim.status in ('FAIL', 'PERMERROR') %}text-danger{% else %}text-muted{% endif %}">
+                                    {{ dkim.status }}
                                 </strong>
                             </div>
                             <div class="d-flex justify-content-between mb-1">
-                                <span>DMARC Enforcement:</span>
-                                <strong class="text-dark">{{ dmarc.effective_policy|upper }}</strong>
+                                <span>SPF:</span>
+                                <strong class="{% if spf.status == 'PASS' %}text-success{% elif spf.status in ('FAIL', 'PERMERROR') %}text-danger{% else %}text-muted{% endif %}">
+                                    {{ spf.status }}
+                                </strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>DMARC:</span>
+                                <strong class="{% if dmarc.status == 'PASS' %}text-success{% elif dmarc.status == 'FAIL' %}text-danger{% else %}text-muted{% endif %}">
+                                    {{ dmarc.status }}
+                                </strong>
                             </div>
                             <div class="d-flex justify-content-between">
-                                <span>Evaluator:</span>
-                                <strong class="text-dark">RFC Standards Matrix</strong>
+                                <span>S/MIME:</span>
+                                <strong class="{% if smime and smime.status == 'VALID' %}text-success{% elif smime and smime.status in ('INVALID', 'EXPIRED_CERTIFICATE') %}text-danger{% else %}text-muted{% endif %}">
+                                    {{ smime.status if smime else 'NONE' }}
+                                </strong>
                             </div>
                         </div>
                     </div>
 
                     <div class="text-muted fs-9 mt-3 font-monospace">
-                        Deterministic CNS heuristic engine &bull; No stochastic bias
+                        <i class="bi bi-shield-check text-primary me-1"></i> Deterministic RFC Heuristic Engine
                     </div>
                 </div>
             </div>
         </div>
-    </section>
 
-    <!-- 2. Email Transmission Metadata Strip -->
-    <section class="card-enterprise">
-        <div class="card-enterprise-header py-2 px-3">
-            <span class="text-muted fs-9 font-monospace text-uppercase fw-semibold">Transmission Metadata</span>
-        </div>
-        <div class="p-3">
+        <!-- Transmission Metadata Strip -->
+        <div class="border-top bg-light p-3">
             <div class="row g-3 fs-8">
                 <div class="col-md-3">
                     <span class="text-muted d-block fs-9 text-uppercase font-monospace mb-1">Sender (From)</span>
@@ -200,735 +204,805 @@
         </div>
     </section>
 
-    <!-- Quick Authentication Summary Strip -->
-    <section class="card-enterprise p-3">
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
-            <div class="d-flex flex-wrap align-items-center gap-3">
-                <!-- DKIM Badge -->
-                <div class="d-flex align-items-center gap-2" data-bs-toggle="tooltip" data-bs-placement="top" title="DomainKeys Identified Mail (RFC 6376) — Asymmetric cryptographic signature verifying content and header integrity.">
-                    <span class="text-muted fs-9 font-monospace fw-semibold">DKIM:</span>
-                    <span class="status-badge {% if dkim.status == 'PASS' %}status-badge-success{% elif dkim.status in ('FAIL', 'PERMERROR') %}status-badge-danger{% elif dkim.status == 'NONE' %}status-badge-neutral{% else %}status-badge-warning{% endif %}">
-                        <span class="status-dot {% if dkim.status == 'PASS' %}status-dot-success{% elif dkim.status in ('FAIL', 'PERMERROR') %}status-dot-danger{% elif dkim.status == 'NONE' %}status-dot-neutral{% else %}status-dot-warning{% endif %}"></span>
-                        {% if dkim.status == 'PASS' %}Passed{% elif dkim.status == 'FAIL' %}Failed{% elif dkim.status == 'PERMERROR' %}PermError{% else %}{{ dkim.status }}{% endif %}
-                    </span>
-                </div>
-                <span class="text-muted d-none d-md-inline">&bull;</span>
-                <!-- SPF Badge -->
-                <div class="d-flex align-items-center gap-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Sender Policy Framework (RFC 7208) — Evaluates whether sending mail server IP is permitted by sender's DNS record.">
-                    <span class="text-muted fs-9 font-monospace fw-semibold">SPF:</span>
-                    <span class="status-badge {% if spf.status == 'PASS' %}status-badge-success{% elif spf.status in ('FAIL', 'PERMERROR') %}status-badge-danger{% elif spf.status == 'NOT_EVALUABLE' %}status-badge-neutral{% else %}status-badge-warning{% endif %}">
-                        <span class="status-dot {% if spf.status == 'PASS' %}status-dot-success{% elif spf.status in ('FAIL', 'PERMERROR') %}status-dot-danger{% elif spf.status == 'NOT_EVALUABLE' %}status-dot-neutral{% else %}status-dot-warning{% endif %}"></span>
-                        {% if spf.status == 'PASS' %}Passed{% elif spf.status == 'NOT_EVALUABLE' %}Not Evaluated{% elif spf.status == 'FAIL' %}Failed{% else %}{{ spf.status }}{% endif %}
-                    </span>
-                </div>
-                <span class="text-muted d-none d-md-inline">&bull;</span>
-                <!-- DMARC Badge -->
-                <div class="d-flex align-items-center gap-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Domain-based Message Authentication (RFC 7489) — Validates that visible From address matches authenticated DKIM/SPF identities.">
-                    <span class="text-muted fs-9 font-monospace fw-semibold">DMARC:</span>
-                    <span class="status-badge {% if dmarc.status == 'PASS' %}status-badge-success{% elif dmarc.status == 'FAIL' %}status-badge-danger{% elif dmarc.status == 'NONE' %}status-badge-neutral{% else %}status-badge-warning{% endif %}">
-                        <span class="status-dot {% if dmarc.status == 'PASS' %}status-dot-success{% elif dmarc.status == 'FAIL' %}status-dot-danger{% elif dmarc.status == 'NONE' %}status-dot-neutral{% else %}status-dot-warning{% endif %}"></span>
-                        {% if dmarc.status == 'PASS' %}Passed{% elif dmarc.status == 'NONE' %}None Published{% elif dmarc.status == 'FAIL' %}Failed{% else %}{{ dmarc.status }}{% endif %}
-                    </span>
+    <!-- =======================================================================
+         SECTION 2: CORE AUTHENTICATION (DKIM, SPF, DMARC, S/MIME)
+         ======================================================================= -->
+    <section>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h2 class="h6 fw-bold text-dark mb-0">Core Email Authentication Protocols</h2>
+                <span class="text-muted fs-9 font-monospace">Independent Cryptographic Verification (RFC 6376, RFC 7208, RFC 7489, RFC 8551)</span>
+            </div>
+            <span class="text-muted fs-9 font-monospace d-none d-sm-inline">SECTION 2 &bull; AUTHENTICATION TRIAD &amp; S/MIME</span>
+        </div>
+
+        <div class="row g-3">
+            <!-- DKIM Card -->
+            <div class="col-lg-3 col-md-6">
+                <div class="card-enterprise h-100 d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="card-enterprise-header d-flex justify-content-between align-items-center">
+                            <strong class="text-dark fs-8">DKIM Signature</strong>
+                            <span class="status-badge {% if dkim.status == 'PASS' %}status-badge-success{% elif dkim.status in ('FAIL', 'PERMERROR') %}status-badge-danger{% elif dkim.status == 'NONE' %}status-badge-neutral{% else %}status-badge-warning{% endif %}">
+                                <span class="status-dot {% if dkim.status == 'PASS' %}status-dot-success{% elif dkim.status in ('FAIL', 'PERMERROR') %}status-dot-danger{% elif dkim.status == 'NONE' %}status-dot-neutral{% else %}status-dot-warning{% endif %}"></span>
+                                {{ dkim.status }}
+                            </span>
+                        </div>
+                        <div class="p-3">
+                            <p class="text-secondary fs-8 mb-3">
+                                {% if dkim.status == 'PASS' %}
+                                    The cryptographic signature was mathematically verified against the sender's public DNS key. Body and headers are intact.
+                                {% elif dkim.status == 'FAIL' %}
+                                    Signature verification failed. The message body or signed headers were altered in transit.
+                                {% elif dkim.status == 'PERMERROR' %}
+                                    Permanent error: DNS public key record was missing (NXDOMAIN) or malformed.
+                                {% elif dkim.status == 'NONE' %}
+                                    No DKIM digital signature was present in this message.
+                                {% else %}
+                                    {{ dkim.summary }}
+                                {% endif %}
+                            </p>
+
+                            <div class="p-2 bg-light rounded-1 border font-monospace fs-9 text-secondary mb-2">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span class="text-muted">Domain:</span>
+                                    <strong class="text-dark text-truncate ms-1" style="max-width: 140px;">{{ dkim.primary_domain or 'None' }}</strong>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-muted">Selector:</span>
+                                    <strong class="text-dark">{{ dkim.primary_selector or 'None' }}</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Expandable Technical Details -->
+                    <div class="p-3 pt-0">
+                        <details class="spec-details">
+                            <summary>Technical Details</summary>
+                            <table class="table-spec mt-2">
+                                <tbody>
+                                    <tr>
+                                        <td class="spec-key">Domain (d=)</td>
+                                        <td class="spec-val">{{ dkim.primary_domain or 'None' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="spec-key">Selector (s=)</td>
+                                        <td class="spec-val">{{ dkim.primary_selector or 'None' }}</td>
+                                    </tr>
+                                    {% if dkim.signatures %}
+                                        <tr>
+                                            <td class="spec-key">Algorithm</td>
+                                            <td class="spec-val">{{ dkim.signatures[0].algorithm }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="spec-key">DNS Query</td>
+                                            <td class="spec-val text-break">{{ dkim.signatures[0].dns_query }}</td>
+                                        </tr>
+                                        {% if dkim.signatures[0].details %}
+                                            <tr>
+                                                <td class="spec-key">Diagnostics</td>
+                                                <td class="spec-val {% if dkim.signatures[0].status == 'PASS' %}text-success{% elif dkim.signatures[0].status in ('FAIL', 'PERMERROR') %}text-danger{% else %}text-secondary{% endif %}">
+                                                    {{ dkim.signatures[0].details }}
+                                                </td>
+                                            </tr>
+                                        {% endif %}
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </details>
+                    </div>
                 </div>
             </div>
 
-            <!-- Toggle Button for Full Technical Details -->
-            <button class="btn btn-sm btn-outline-primary fw-semibold px-3 py-1" type="button" data-bs-toggle="collapse" data-bs-target="#detailedForensicsCollapse" aria-expanded="false" id="toggleForensicsBtn">
-                <i class="bi bi-layout-text-sidebar-reverse me-1"></i>
-                <span id="forensicsBtnText">View More Technical Details</span>
-                <i class="bi bi-chevron-down ms-1" id="forensicsChevron"></i>
-            </button>
+            <!-- SPF Card -->
+            <div class="col-lg-3 col-md-6">
+                <div class="card-enterprise h-100 d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="card-enterprise-header d-flex justify-content-between align-items-center">
+                            <strong class="text-dark fs-8">SPF Authorization</strong>
+                            <span class="status-badge {% if spf.status == 'PASS' %}status-badge-success{% elif spf.status in ('FAIL', 'PERMERROR') %}status-badge-danger{% elif spf.status == 'NOT_EVALUABLE' %}status-badge-neutral{% else %}status-badge-warning{% endif %}">
+                                <span class="status-dot {% if spf.status == 'PASS' %}status-dot-success{% elif spf.status in ('FAIL', 'PERMERROR') %}status-dot-danger{% elif spf.status == 'NOT_EVALUABLE' %}status-dot-neutral{% else %}status-dot-warning{% endif %}"></span>
+                                {% if spf.status == 'NOT_EVALUABLE' %}Not Evaluated{% else %}{{ spf.status }}{% endif %}
+                            </span>
+                        </div>
+                        <div class="p-3">
+                            <p class="text-secondary fs-8 mb-3">
+                                {% if spf.status == 'PASS' %}
+                                    The sending mail transfer agent IP address is explicitly authorized by the sender's published DNS SPF record.
+                                {% elif spf.status == 'NOT_EVALUABLE' %}
+                                    Static .eml inspection mode: Sending client IP was not supplied. MailTrust avoids synthetic parameter bias.
+                                {% elif spf.status == 'FAIL' %}
+                                    Sending IP is explicitly unauthorized by the domain owner's SPF policy (-all).
+                                {% else %}
+                                    {{ spf.summary }}
+                                {% endif %}
+                            </p>
+
+                            <div class="p-2 bg-light rounded-1 border font-monospace fs-9 text-secondary mb-2">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span class="text-muted">Client IP:</span>
+                                    <strong class="text-dark">{{ spf.client_ip or '(Unavailable)' }}</strong>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-muted">Domain:</span>
+                                    <strong class="text-dark text-truncate ms-1" style="max-width: 140px;">{{ spf.domain or '(None)' }}</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Expandable Technical Details -->
+                    <div class="p-3 pt-0">
+                        <details class="spec-details">
+                            <summary>Technical Details</summary>
+                            <table class="table-spec mt-2">
+                                <tbody>
+                                    <tr>
+                                        <td class="spec-key">Client IP</td>
+                                        <td class="spec-val">{{ spf.client_ip or '(Unavailable)' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="spec-key">Envelope Domain</td>
+                                        <td class="spec-val">{{ spf.domain or '(None)' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="spec-key">Lookups Used</td>
+                                        <td class="spec-val">{{ spf.dns_lookups_count }}/10</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="spec-key">Context Source</td>
+                                        <td class="spec-val">{{ spf.context_source }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </details>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DMARC Card -->
+            <div class="col-lg-3 col-md-6">
+                <div class="card-enterprise h-100 d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="card-enterprise-header d-flex justify-content-between align-items-center">
+                            <strong class="text-dark fs-8">DMARC Alignment</strong>
+                            <span class="status-badge {% if dmarc.status == 'PASS' %}status-badge-success{% elif dmarc.status == 'FAIL' %}status-badge-danger{% elif dmarc.status == 'NONE' %}status-badge-neutral{% else %}status-badge-warning{% endif %}">
+                                <span class="status-dot {% if dmarc.status == 'PASS' %}status-dot-success{% elif dmarc.status == 'FAIL' %}status-dot-danger{% elif dmarc.status == 'NONE' %}status-dot-neutral{% else %}status-dot-warning{% endif %}"></span>
+                                {% if dmarc.status == 'NONE' %}None Published{% else %}{{ dmarc.status }}{% endif %}
+                            </span>
+                        </div>
+                        <div class="p-3">
+                            <p class="text-secondary fs-8 mb-3">
+                                {% if dmarc.status == 'PASS' %}
+                                    The visible RFC 5322 From header domain aligns with the verified DKIM signature or SPF authorized identifier.
+                                {% elif dmarc.status == 'FAIL' %}
+                                    Alignment failure: The visible From domain does not match authenticated DKIM or SPF identities.
+                                {% elif dmarc.status == 'NONE' %}
+                                    The domain has no published RFC 7489 DMARC policy record. This represents absence of policy.
+                                {% else %}
+                                    {{ dmarc.summary }}
+                                {% endif %}
+                            </p>
+
+                            <div class="p-2 bg-light rounded-1 border font-monospace fs-9 text-secondary mb-2">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span class="text-muted">From Domain:</span>
+                                    <strong class="text-dark text-truncate ms-1" style="max-width: 140px;">{{ dmarc.header_from_domain }}</strong>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-muted">Policy (p=):</span>
+                                    <strong class="text-dark">{{ dmarc.policy or 'none' }}</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Expandable Technical Details -->
+                    <div class="p-3 pt-0">
+                        <details class="spec-details">
+                            <summary>Technical Details</summary>
+                            <table class="table-spec mt-2">
+                                <tbody>
+                                    <tr>
+                                        <td class="spec-key">From Domain</td>
+                                        <td class="spec-val">{{ dmarc.header_from_domain }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="spec-key">Effective Policy</td>
+                                        <td class="spec-val fw-bold text-dark">{{ dmarc.effective_policy|upper }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="spec-key">DKIM Aligned</td>
+                                        <td class="spec-val {% if dmarc.dkim_aligned %}text-success{% else %}text-muted{% endif %}">
+                                            {{ dmarc.dkim_aligned }} (mode: {{ dmarc.adkim }})
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="spec-key">SPF Aligned</td>
+                                        <td class="spec-val {% if dmarc.spf_aligned %}text-success{% else %}text-muted{% endif %}">
+                                            {{ dmarc.spf_aligned }} (mode: {{ dmarc.aspf }})
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </details>
+                    </div>
+                </div>
+            </div>
+
+            <!-- S/MIME Card -->
+            <div class="col-lg-3 col-md-6">
+                <div class="card-enterprise h-100 d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="card-enterprise-header d-flex justify-content-between align-items-center">
+                            <strong class="text-dark fs-8">S/MIME Signature</strong>
+                            <span class="status-badge {% if smime and smime.status == 'VALID' %}status-badge-success{% elif smime and smime.status in ('INVALID', 'EXPIRED_CERTIFICATE') %}status-badge-danger{% elif smime and smime.status == 'NOT_PRESENT' %}status-badge-neutral{% else %}status-badge-warning{% endif %}">
+                                <span class="status-dot {% if smime and smime.status == 'VALID' %}status-dot-success{% elif smime and smime.status in ('INVALID', 'EXPIRED_CERTIFICATE') %}status-dot-danger{% elif smime and smime.status == 'NOT_PRESENT' %}status-dot-neutral{% else %}status-dot-warning{% endif %}"></span>
+                                {% if not smime or smime.status == 'NOT_PRESENT' %}None Present{% else %}{{ smime.status }}{% endif %}
+                            </span>
+                        </div>
+                        <div class="p-3">
+                            <p class="text-secondary fs-8 mb-3">
+                                {% if smime and smime.status == 'VALID' %}
+                                    Cryptographic X.509 signature verified. Message content is unaltered and signer certificate matches From.
+                                {% elif smime and smime.status == 'INVALID' %}
+                                    Mathematical signature verification failed. Message body or CMS envelope corrupted.
+                                {% elif smime and smime.status == 'EXPIRED_CERTIFICATE' %}
+                                    Mathematical signature valid, but signer's X.509 certificate has expired.
+                                {% elif smime and smime.status == 'ENCRYPTED_NOT_ANALYZABLE' %}
+                                    Message is S/MIME encrypted (enveloped-data). Decryption key required.
+                                {% elif not smime or smime.status == 'NOT_PRESENT' %}
+                                    No S/MIME CMS envelope was attached to this MIME payload.
+                                {% else %}
+                                    {{ smime.summary }}
+                                {% endif %}
+                            </p>
+
+                            <div class="p-2 bg-light rounded-1 border font-monospace fs-9 text-secondary mb-2">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span class="text-muted">Signer:</span>
+                                    <strong class="text-dark text-truncate ms-1" style="max-width: 140px;">{{ smime.signer_email if smime and smime.signer_email else 'None' }}</strong>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-muted">Standard:</span>
+                                    <strong class="text-dark">RFC 8551</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Expandable Technical Details -->
+                    <div class="p-3 pt-0">
+                        {% if smime and smime.is_smime %}
+                            <details class="spec-details">
+                                <summary>Technical Details</summary>
+                                <table class="table-spec mt-2">
+                                    <tbody>
+                                        <tr>
+                                            <td class="spec-key">Type</td>
+                                            <td class="spec-val">{{ smime.smime_type }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="spec-key">Signer Email</td>
+                                            <td class="spec-val text-break">{{ smime.signer_email or '(None)' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="spec-key">Common Name</td>
+                                            <td class="spec-val">{{ smime.signer_common_name or '(None)' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="spec-key">Key Spec</td>
+                                            <td class="spec-val">{{ smime.public_key_type }} ({{ smime.public_key_size }} bits)</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="spec-key">Valid Window</td>
+                                            <td class="spec-val fs-9">{{ smime.valid_from[:10] }} to {{ smime.valid_to[:10] }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="spec-key">From Match</td>
+                                            <td class="spec-val">{{ "YES" if smime.identity_matches_from else "NO" }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </details>
+                        {% else %}
+                            <span class="text-muted fs-9 font-monospace">CMS Detached &bull; RFC 8551</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
 
-    <!-- Collapsible Detailed Forensics Section (Hidden by default) -->
-    <div class="collapse" id="detailedForensicsCollapse">
-        <div class="d-flex flex-column gap-4 pt-3">
-
-        <!-- 3. Authentication Triad Cards (DKIM, SPF, DMARC) -->
-        <section>
-            <div class="d-flex justify-content-between align-items-center mb-3">
+    <!-- =======================================================================
+         SECTION 3: CRYPTOGRAPHIC HYGIENE
+         ======================================================================= -->
+    {% if hygiene and hygiene.status != 'NOT_EVALUABLE' %}
+    <section class="card-enterprise">
+        <div class="card-enterprise-header d-flex justify-content-between align-items-center py-2 px-3">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-cpu text-primary"></i>
                 <div>
-                    <h2 class="h6 fw-bold text-dark mb-0">Core Email Authentication Protocols</h2>
-                    <span class="text-muted fs-9 font-monospace">Independent Cryptographic Verification</span>
-                </div>
-                <span class="text-muted fs-9 font-monospace d-none d-sm-inline">RFC Standards Evaluation</span>
-            </div>
-
-            <div class="row g-3">
-                <!-- DKIM Card -->
-                <div class="col-lg-3 col-md-6">
-                    <div class="card-enterprise h-100 d-flex flex-column justify-content-between">
-                        <div>
-                            <div class="card-enterprise-header d-flex justify-content-between align-items-center">
-                                <strong class="text-dark fs-8">DKIM Digital Signature</strong>
-                                <span class="status-badge {% if dkim.status == 'PASS' %}status-badge-success{% elif dkim.status in ('FAIL', 'PERMERROR') %}status-badge-danger{% elif dkim.status == 'NONE' %}status-badge-neutral{% else %}status-badge-warning{% endif %}">
-                                    <span class="status-dot {% if dkim.status == 'PASS' %}status-dot-success{% elif dkim.status in ('FAIL', 'PERMERROR') %}status-dot-danger{% elif dkim.status == 'NONE' %}status-dot-neutral{% else %}status-dot-warning{% endif %}"></span>
-                                    {{ dkim.status }}
-                                </span>
-                            </div>
-                            <div class="p-3">
-                                <p class="text-secondary fs-8 mb-3">
-                                    {% if dkim.status == 'PASS' %}
-                                        The digital signature was cryptographically verified for the signed parts of this email.
-                                    {% elif dkim.status == 'FAIL' %}
-                                        Signature verification failed. Content or signed headers were altered in transit.
-                                    {% elif dkim.status == 'PERMERROR' %}
-                                        Permanent error: The public key record could not be retrieved from DNS (NXDOMAIN) or is invalid. Cryptographic verification cannot proceed.
-                                    {% elif dkim.status == 'NONE' %}
-                                        No DKIM digital signature was present in the email headers.
-                                    {% else %}
-                                        {{ dkim.summary }}
-                                    {% endif %}
-                                </p>
-                            </div>
-                        </div>
-
-                        <div class="p-3 pt-0">
-                            <button class="btn btn-link text-decoration-none text-primary p-0 fs-9 fw-semibold font-monospace" type="button" data-bs-toggle="collapse" data-bs-target="#dkimTechDetails">
-                                Technical Details <i class="bi bi-chevron-down ms-1"></i>
-                            </button>
-                            <div class="collapse mt-2" id="dkimTechDetails">
-                                <table class="table-spec">
-                                    <tbody>
-                                        <tr>
-                                            <td class="spec-key">Domain (d=)</td>
-                                            <td class="spec-val">{{ dkim.primary_domain or 'None' }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="spec-key">Selector (s=)</td>
-                                            <td class="spec-val">{{ dkim.primary_selector or 'None' }}</td>
-                                        </tr>
-                                        {% if dkim.signatures %}
-                                            <tr>
-                                                <td class="spec-key">Status</td>
-                                                <td class="spec-val">
-                                                    <span class="{% if dkim.signatures[0].status == 'PASS' %}text-success{% elif dkim.signatures[0].status in ('FAIL', 'PERMERROR') %}text-danger{% else %}text-warning{% endif %} fw-semibold">
-                                                        {{ dkim.signatures[0].status }}
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td class="spec-key">Algorithm</td>
-                                                <td class="spec-val">{{ dkim.signatures[0].algorithm }}</td>
-                                            </tr>
-                                            <tr>
-                                                <td class="spec-key">DNS Query</td>
-                                                <td class="spec-val text-break">{{ dkim.signatures[0].dns_query }}</td>
-                                            </tr>
-                                            {% if dkim.signatures[0].details %}
-                                                <tr>
-                                                    <td class="spec-key">
-                                                        {% if dkim.signatures[0].status == 'PASS' %}Diagnostics{% elif dkim.signatures[0].status in ('FAIL', 'PERMERROR') %}Error{% else %}Details{% endif %}
-                                                    </td>
-                                                    <td class="spec-val {% if dkim.signatures[0].status == 'PASS' %}text-success{% elif dkim.signatures[0].status in ('FAIL', 'PERMERROR') %}text-danger{% else %}text-secondary{% endif %}">
-                                                        {{ dkim.signatures[0].details }}
-                                                    </td>
-                                                </tr>
-                                            {% endif %}
-                                        {% endif %}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- SPF Card -->
-                <div class="col-lg-3 col-md-6">
-                    <div class="card-enterprise h-100 d-flex flex-column justify-content-between">
-                        <div>
-                            <div class="card-enterprise-header d-flex justify-content-between align-items-center">
-                                <strong class="text-dark fs-8">SPF Sender Authorization</strong>
-                                <span class="status-badge {% if spf.status == 'PASS' %}status-badge-success{% elif spf.status in ('FAIL', 'PERMERROR') %}status-badge-danger{% elif spf.status == 'NOT_EVALUABLE' %}status-badge-neutral{% else %}status-badge-warning{% endif %}">
-                                    <span class="status-dot {% if spf.status == 'PASS' %}status-dot-success{% elif spf.status in ('FAIL', 'PERMERROR') %}status-dot-danger{% elif spf.status == 'NOT_EVALUABLE' %}status-dot-neutral{% else %}status-dot-warning{% endif %}"></span>
-                                    {% if spf.status == 'NOT_EVALUABLE' %}Not Evaluated{% else %}{{ spf.status }}{% endif %}
-                                </span>
-                            </div>
-                            <div class="p-3">
-                                <p class="text-secondary fs-8 mb-3">
-                                    {% if spf.status == 'PASS' %}
-                                        The connecting IP address is explicitly authorized by the sender's published SPF policy.
-                                    {% elif spf.status == 'NOT_EVALUABLE' %}
-                                        Connecting client IP is unavailable in the static .eml file. MailTrust does not simulate unverified SPF parameters. Check receiver evidence below.
-                                    {% elif spf.status == 'FAIL' %}
-                                        Sending IP is explicitly rejected by the domain owner's SPF record.
-                                    {% else %}
-                                        {{ spf.summary }}
-                                    {% endif %}
-                                </p>
-                            </div>
-                        </div>
-
-                        <div class="p-3 pt-0">
-                            <button class="btn btn-link text-decoration-none text-primary p-0 fs-9 fw-semibold font-monospace" type="button" data-bs-toggle="collapse" data-bs-target="#spfTechDetails">
-                                Technical Details <i class="bi bi-chevron-down ms-1"></i>
-                            </button>
-                            <div class="collapse mt-2" id="spfTechDetails">
-                                <table class="table-spec">
-                                    <tbody>
-                                        <tr>
-                                            <td class="spec-key">Client IP</td>
-                                            <td class="spec-val">{{ spf.client_ip or '(Unavailable)' }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="spec-key">Envelope Domain</td>
-                                            <td class="spec-val">{{ spf.domain or '(None)' }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="spec-key">Lookups Used</td>
-                                            <td class="spec-val">{{ spf.dns_lookups_count }}/10</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="spec-key">Context Source</td>
-                                            <td class="spec-val">{{ spf.context_source }}</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- DMARC Card -->
-                <div class="col-lg-3 col-md-6">
-                    <div class="card-enterprise h-100 d-flex flex-column justify-content-between">
-                        <div>
-                            <div class="card-enterprise-header d-flex justify-content-between align-items-center">
-                                <strong class="text-dark fs-8">DMARC Domain Alignment</strong>
-                                <span class="status-badge {% if dmarc.status == 'PASS' %}status-badge-success{% elif dmarc.status == 'FAIL' %}status-badge-danger{% elif dmarc.status == 'NONE' %}status-badge-neutral{% else %}status-badge-warning{% endif %}">
-                                    <span class="status-dot {% if dmarc.status == 'PASS' %}status-dot-success{% elif dmarc.status == 'FAIL' %}status-dot-danger{% elif dmarc.status == 'NONE' %}status-dot-neutral{% else %}status-dot-warning{% endif %}"></span>
-                                    {% if dmarc.status == 'NONE' %}None Published{% else %}{{ dmarc.status }}{% endif %}
-                                </span>
-                            </div>
-                            <div class="p-3">
-                                <p class="text-secondary fs-8 mb-3">
-                                    {% if dmarc.status == 'PASS' %}
-                                        The visible sender domain aligns with the authenticated DKIM or SPF identity.
-                                    {% elif dmarc.status == 'FAIL' %}
-                                        The required alignment between the visible sender domain and authenticated domain was not established.
-                                    {% elif dmarc.status == 'NONE' %}
-                                        Domain has not published an RFC 7489 DMARC policy record. This is an absence of policy, not a policy violation (FAIL).
-                                    {% else %}
-                                        {{ dmarc.summary }}
-                                    {% endif %}
-                                </p>
-                            </div>
-                        </div>
-
-                        <div class="p-3 pt-0">
-                            <button class="btn btn-link text-decoration-none text-primary p-0 fs-9 fw-semibold font-monospace" type="button" data-bs-toggle="collapse" data-bs-target="#dmarcTechDetails">
-                                Technical Details <i class="bi bi-chevron-down ms-1"></i>
-                            </button>
-                            <div class="collapse mt-2" id="dmarcTechDetails">
-                                <table class="table-spec">
-                                    <tbody>
-                                        <tr>
-                                            <td class="spec-key">From Domain</td>
-                                            <td class="spec-val">{{ dmarc.header_from_domain }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="spec-key">Status</td>
-                                            <td class="spec-val">{{ dmarc.status }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="spec-key">Policy (p=)</td>
-                                            <td class="spec-val">{{ dmarc.policy }} (effective: {{ dmarc.effective_policy }})</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="spec-key">DKIM Aligned</td>
-                                            <td class="spec-val">{{ dmarc.dkim_aligned }} ({{ dmarc.adkim }})</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="spec-key">SPF Aligned</td>
-                                            <td class="spec-val">{{ dmarc.spf_aligned }} ({{ dmarc.aspf }})</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- S/MIME Digital Signature Card -->
-                <div class="col-lg-3 col-md-6">
-                    <div class="card-enterprise h-100 d-flex flex-column justify-content-between">
-                        <div>
-                            <div class="card-enterprise-header d-flex justify-content-between align-items-center">
-                                <strong class="text-dark fs-8">S/MIME Signature</strong>
-                                <span class="status-badge {% if smime and smime.status == 'VALID' %}status-badge-success{% elif smime and smime.status in ('INVALID', 'EXPIRED_CERTIFICATE') %}status-badge-danger{% elif smime and smime.status == 'NOT_PRESENT' %}status-badge-neutral{% else %}status-badge-warning{% endif %}">
-                                    <span class="status-dot {% if smime and smime.status == 'VALID' %}status-dot-success{% elif smime and smime.status in ('INVALID', 'EXPIRED_CERTIFICATE') %}status-dot-danger{% elif smime and smime.status == 'NOT_PRESENT' %}status-dot-neutral{% else %}status-dot-warning{% endif %}"></span>
-                                    {% if not smime or smime.status == 'NOT_PRESENT' %}None Present{% else %}{{ smime.status }}{% endif %}
-                                </span>
-                            </div>
-                            <div class="p-3">
-                                <p class="text-secondary fs-8 mb-3">
-                                    {% if smime and smime.status == 'VALID' %}
-                                        Cryptographic X.509 signature verified. Message content is intact and identity matches From.
-                                    {% elif smime and smime.status == 'INVALID' %}
-                                        Mathematical signature verification failed. Message body or CMS envelope corrupted.
-                                    {% elif smime and smime.status == 'EXPIRED_CERTIFICATE' %}
-                                        Mathematical signature valid, but the signer's X.509 certificate has expired.
-                                    {% elif smime and smime.status == 'ENCRYPTED_NOT_ANALYZABLE' %}
-                                        Message is S/MIME encrypted (enveloped-data). Decryption key required for analysis.
-                                    {% elif not smime or smime.status == 'NOT_PRESENT' %}
-                                        No S/MIME digital signature envelope detected in MIME structure.
-                                    {% else %}
-                                        {{ smime.summary }}
-                                    {% endif %}
-                                </p>
-                            </div>
-                        </div>
-
-                        <div class="p-3 pt-0">
-                            {% if smime and smime.is_smime %}
-                                <button class="btn btn-link text-decoration-none text-primary p-0 fs-9 fw-semibold font-monospace" type="button" data-bs-toggle="collapse" data-bs-target="#smimeTechDetails">
-                                    Technical Details <i class="bi bi-chevron-down ms-1"></i>
-                                </button>
-                                <div class="collapse mt-2" id="smimeTechDetails">
-                                    <table class="table-spec">
-                                        <tbody>
-                                            <tr>
-                                                <td class="spec-key">Type</td>
-                                                <td class="spec-val">{{ smime.smime_type }}</td>
-                                            </tr>
-                                            <tr>
-                                                <td class="spec-key">Signer Email</td>
-                                                <td class="spec-val text-break">{{ smime.signer_email or '(None)' }}</td>
-                                            </tr>
-                                            <tr>
-                                                <td class="spec-key">Common Name</td>
-                                                <td class="spec-val">{{ smime.signer_common_name or '(None)' }}</td>
-                                            </tr>
-                                            <tr>
-                                                <td class="spec-key">Key Spec</td>
-                                                <td class="spec-val">{{ smime.public_key_type }} ({{ smime.public_key_size }} bits)</td>
-                                            </tr>
-                                            <tr>
-                                                <td class="spec-key">Valid Window</td>
-                                                <td class="spec-val fs-9">{{ smime.valid_from[:10] }} to {{ smime.valid_to[:10] }}</td>
-                                            </tr>
-                                            <tr>
-                                                <td class="spec-key">From Match</td>
-                                                <td class="spec-val">{{ "YES" if smime.identity_matches_from else "NO" }}</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            {% else %}
-                                <span class="text-muted fs-9 font-monospace">RFC 8551 / CMS Detached</span>
-                            {% endif %}
-                        </div>
-                    </div>
+                    <h2 class="h6 fw-bold text-dark mb-0">Cryptographic Hygiene &amp; Key Strength</h2>
+                    <span class="text-muted fs-9 font-monospace">NIST SP 800-57, RFC 6376, RFC 8301 &amp; RFC 8463 Standards</span>
                 </div>
             </div>
-        </section>
-
-        <!-- 3a. Cryptographic Hygiene & Key Strength Audit -->
-        {% if hygiene and hygiene.status != 'NOT_EVALUABLE' %}
-        <section class="card-enterprise">
-            <div class="card-enterprise-header d-flex justify-content-between align-items-center py-2 px-3">
-                <div class="d-flex align-items-center gap-2">
-                    <i class="bi bi-cpu text-primary"></i>
-                    <div>
-                        <h2 class="h6 fw-bold text-dark mb-0">Cryptographic Key Strength Audit</h2>
-                        <span class="text-muted fs-9 font-monospace">NIST SP 800-57, RFC 6376, RFC 8301 &amp; RFC 8463 Standards</span>
-                    </div>
-                </div>
+            <div class="d-flex align-items-center gap-2">
                 <span class="status-badge {% if hygiene.status == 'PASS' %}status-badge-success{% elif hygiene.status == 'WARNING' %}status-badge-warning{% else %}status-badge-danger{% endif %}">
                     <span class="status-dot {% if hygiene.status == 'PASS' %}status-dot-success{% elif hygiene.status == 'WARNING' %}status-dot-warning{% else %}status-dot-danger{% endif %}"></span>
                     KEY STATUS: {{ hygiene.status }}
                 </span>
+                <span class="text-muted fs-9 font-monospace d-none d-md-inline">SECTION 3</span>
             </div>
+        </div>
 
-            <div class="p-3">
-                <div class="row g-3 mb-3">
-                    <div class="col-sm-4 col-4">
-                        <div class="p-2 bg-light border rounded text-center">
-                            <div class="text-muted fs-9 text-uppercase">Key Bit Length</div>
-                            <div class="fw-bold font-monospace fs-7 {% if hygiene.key_size and hygiene.key_size < 1024 %}text-danger{% elif hygiene.key_size and hygiene.key_size < 2048 %}text-warning{% else %}text-success{% endif %}">
-                                {{ hygiene.key_size ~ ' bits' if hygiene.key_size else (hygiene.key_type|upper if hygiene.key_type else 'N/A') }}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-sm-4 col-4">
-                        <div class="p-2 bg-light border rounded text-center">
-                            <div class="text-muted fs-9 text-uppercase">Hash Algorithm</div>
-                            <div class="fw-bold font-monospace fs-7 {% if 'sha1' in (hygiene.algorithm or '') %}text-danger{% else %}text-dark{% endif %}">
-                                {{ hygiene.algorithm or 'N/A' }}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-sm-4 col-4">
-                        <div class="p-2 bg-light border rounded text-center">
-                            <div class="text-muted fs-9 text-uppercase">Key Type</div>
-                            <div class="fw-bold font-monospace fs-7 text-dark">{{ hygiene.key_type|upper or 'RSA' }}</div>
+        <div class="p-3">
+            <!-- 3 Clean KPI Metrics (Hygiene Penalty Score Removed) -->
+            <div class="row g-3 mb-3">
+                <div class="col-sm-4 col-4">
+                    <div class="p-3 bg-light border rounded-1 text-center">
+                        <div class="text-muted fs-9 text-uppercase font-monospace mb-1">Key Bit Length</div>
+                        <div class="fw-bold font-monospace fs-6 {% if hygiene.key_size and hygiene.key_size < 1024 %}text-danger{% elif hygiene.key_size and hygiene.key_size < 2048 %}text-warning{% else %}text-success{% endif %}">
+                            {{ hygiene.key_size ~ ' bits' if hygiene.key_size else (hygiene.key_type|upper if hygiene.key_type else 'N/A') }}
                         </div>
                     </div>
                 </div>
+                <div class="col-sm-4 col-4">
+                    <div class="p-3 bg-light border rounded-1 text-center">
+                        <div class="text-muted fs-9 text-uppercase font-monospace mb-1">Hash Algorithm</div>
+                        <div class="fw-bold font-monospace fs-6 {% if 'sha1' in (hygiene.algorithm or '') %}text-danger{% else %}text-dark{% endif %}">
+                            {{ hygiene.algorithm or 'N/A' }}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-4 col-4">
+                    <div class="p-3 bg-light border rounded-1 text-center">
+                        <div class="text-muted fs-9 text-uppercase font-monospace mb-1">Key Type</div>
+                        <div class="fw-bold font-monospace fs-6 text-dark">{{ hygiene.key_type|upper or 'RSA' }}</div>
+                    </div>
+                </div>
+            </div>
 
-                {% if hygiene.findings %}
-                    <div class="table-responsive border rounded-1">
-                        <table class="table table-sm table-hover mb-0 font-monospace fs-9 align-middle">
-                            <thead class="table-light">
+            <!-- Cryptographic Parameter Specification Audit Table -->
+            {% if hygiene.findings %}
+                <div class="table-responsive border rounded-1 mb-3">
+                    <table class="table table-sm table-hover mb-0 font-monospace fs-9 align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 32%;">Security Parameter</th>
+                                <th>Observed Technical Configuration</th>
+                                <th class="text-end" style="width: 18%;">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for hf in hygiene.findings %}
                                 <tr>
-                                    <th>Security Parameter</th>
-                                    <th>Observed Configuration</th>
-                                    <th class="text-end">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for hf in hygiene.findings %}
-                                    <tr>
-                                        <td class="fw-semibold text-dark">{{ hf.title }}</td>
-                                        <td class="text-secondary text-truncate" style="max-width: 420px;" title="{{ hf.evidence }}">{{ hf.evidence }}</td>
-                                        <td class="text-end">
-                                            <span class="badge {% if hf.severity in ('CRITICAL', 'HIGH') %}bg-danger{% elif hf.severity == 'WARNING' %}bg-warning text-dark{% else %}bg-success{% endif %}">
-                                                {{ hf.severity }}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                {% endif %}
-            </div>
-        </section>
-        {% endif %}
-
-        <!-- Header Provenance & Identity Divergence -->
-        {% if provenance and provenance.findings %}
-        <section class="card-enterprise">
-            <div class="card-enterprise-header d-flex justify-content-between align-items-center py-2 px-3">
-                <div class="d-flex align-items-center gap-2">
-                    <i class="bi bi-signpost-split text-primary"></i>
-                    <div>
-                        <h2 class="h6 fw-bold text-dark mb-0">Header Provenance &amp; Identity Divergence</h2>
-                        <span class="text-muted fs-9 font-monospace">Multi-hop MTA Stack &amp; Envelope Alignment (RFC 8601)</span>
-                    </div>
-                </div>
-                <span class="badge {% if provenance.has_anomalies %}bg-warning-subtle text-warning border border-warning-subtle{% else %}bg-success-subtle text-success border border-success-subtle{% endif %}">
-                    {% if provenance.has_anomalies %}Routing Anomalies{% else %}Headers Aligned{% endif %}
-                </span>
-            </div>
-            <div class="p-3">
-                <div class="row g-2 mb-3 fs-9 font-monospace">
-                    <div class="col-md-4">
-                        <div class="p-2 bg-light border rounded">
-                            <span class="text-muted">From Domain:</span>
-                            <div class="fw-bold text-dark">{{ provenance.identity_alignment.from_domain or 'None' }}</div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="p-2 bg-light border rounded">
-                            <span class="text-muted">Reply-To Domain:</span>
-                            <div class="fw-bold {% if not provenance.identity_alignment.reply_to_matches_from %}text-danger{% else %}text-dark{% endif %}">
-                                {{ provenance.identity_alignment.reply_to_domain or 'Same as From' }}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="p-2 bg-light border rounded">
-                            <span class="text-muted">Return-Path Domain:</span>
-                            <div class="fw-bold text-dark">{{ provenance.identity_alignment.return_path_domain or 'None' }}</div>
-                        </div>
-                    </div>
-                </div>
-
-                {% for pf in provenance.findings %}
-                    <div class="p-2 mb-2 rounded border {% if pf.severity == 'WARNING' %}bg-warning-subtle border-warning-subtle text-warning-emphasis{% else %}bg-light text-secondary{% endif %} fs-8">
-                        <strong>{{ pf.title }}:</strong> {{ pf.details }}
-                    </div>
-                {% endfor %}
-            </div>
-        </section>
-        {% endif %}
-
-        <!-- 3b. Receiver-Reported Delivery Evidence (Authentication-Results & Received-SPF) -->
-        {% if parsed_email.authentication_results_headers or parsed_email.received_spf_parsed %}
-        <section class="card-enterprise">
-            <div class="card-enterprise-header d-flex justify-content-between align-items-center py-2 px-3">
-                <div>
-                    <h2 class="h6 fw-bold text-dark mb-0">Receiver-Reported Delivery Evidence</h2>
-                    <span class="text-muted fs-9 font-monospace">MTA Headers Recorded Upon Inbound Delivery</span>
-                </div>
-                <span class="badge bg-light text-secondary border font-monospace fs-9">Reported MTA Context</span>
-            </div>
-
-            <div class="p-3">
-                <div class="p-2 px-3 bg-light border rounded-1 mb-3 fs-9 text-secondary font-monospace">
-                    <i class="bi bi-info-circle text-primary me-1"></i> Inbound delivery headers recorded by receiving MTA (<code>{{ parsed_email.authentication_results_headers[0].authserv_id if parsed_email.authentication_results_headers else 'inbound MTA' }}</code>) at transmission time.
-                </div>
-
-                <div class="row g-3">
-                    {% if parsed_email.received_spf_parsed %}
-                        {% for spf_rec in parsed_email.received_spf_parsed %}
-                            <div class="col-md-6">
-                                <div class="p-3 bg-white border rounded-1 h-100 font-monospace fs-9">
-                                    <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
-                                        <strong class="text-dark"><i class="bi bi-hdd-network text-primary me-1"></i> Received-SPF Header</strong>
-                                        <span class="status-badge {% if spf_rec.result == 'PASS' %}status-badge-success{% elif spf_rec.result in ('FAIL', 'PERMERROR') %}status-badge-danger{% else %}status-badge-neutral{% endif %}">
-                                            {{ spf_rec.result }}
+                                    <td class="fw-semibold text-dark">{{ hf.title }}</td>
+                                    <td class="text-secondary text-truncate" style="max-width: 480px;" title="{{ hf.evidence }}">{{ hf.evidence }}</td>
+                                    <td class="text-end">
+                                        <span class="badge {% if hf.severity in ('CRITICAL', 'HIGH') %}bg-danger{% elif hf.severity == 'WARNING' %}bg-warning text-dark{% else %}bg-success{% endif %}">
+                                            {{ hf.severity }}
                                         </span>
-                                    </div>
-                                    {% if spf_rec.client_ip %}<div><span class="text-muted">Client IP:</span> {{ spf_rec.client_ip }}</div>{% endif %}
-                                    {% if spf_rec.envelope_from %}<div><span class="text-muted">Envelope From:</span> {{ spf_rec.envelope_from }}</div>{% endif %}
-                                    {% if spf_rec.comment %}
-                                        <div class="text-muted mt-1 fst-italic">"{{ spf_rec.comment }}"</div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        {% endfor %}
-                    {% endif %}
-
-                    {% if parsed_email.authentication_results_headers %}
-                        {% for ar in parsed_email.authentication_results_headers %}
-                            <div class="col-md-6">
-                                <div class="p-3 bg-white border rounded-1 h-100 font-monospace fs-9">
-                                    <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
-                                        <strong class="text-dark"><i class="bi bi-shield-check text-primary me-1"></i> Authentication-Results</strong>
-                                        <span class="text-muted fs-9">MTA: {{ ar.authserv_id }}</span>
-                                    </div>
-                                    <div class="d-flex flex-wrap gap-1 mb-2">
-                                        {% for claim in ar.claims %}
-                                            <span class="badge {% if claim.claimed_result == 'PASS' %}bg-success{% elif claim.claimed_result in ('FAIL', 'PERMERROR') %}bg-danger{% else %}bg-secondary{% endif %} font-monospace fs-9">
-                                                {{ claim.mechanism }}={{ claim.claimed_result }}
-                                            </span>
-                                        {% endfor %}
-                                    </div>
-                                    <div class="text-secondary text-break fs-9">
-                                        {{ ar.raw }}
-                                    </div>
-                                </div>
-                            </div>
-                        {% endfor %}
-                    {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
-            </div>
-        </section>
-        {% endif %}
+            {% endif %}
 
-        <!-- 4. Security Findings & Detected Indicators -->
-        <section class="card-enterprise">
-            <div class="card-enterprise-header d-flex justify-content-between align-items-center py-2 px-3">
-                <h2 class="h6 fw-bold text-dark mb-0">Detected Security Indicators</h2>
-                <span class="text-muted fs-9 font-monospace">{{ domain.findings|length + phishing.indicators|length }} findings identified</span>
-            </div>
+            <!-- Expandable Inbound MTA Delivery Evidence -->
+            {% if parsed_email.authentication_results_headers or parsed_email.received_spf_parsed %}
+                <details class="enterprise-details mt-2">
+                    <summary>
+                        <span><i class="bi bi-hdd-network text-primary me-2"></i> Receiver-Reported Delivery Evidence (Authentication-Results &amp; Received-SPF Headers)</span>
+                    </summary>
+                    <div class="details-body">
+                        <div class="p-2 px-3 bg-light border rounded-1 mb-3 fs-9 text-secondary font-monospace">
+                            <i class="bi bi-info-circle text-primary me-1"></i> Recorded by receiving mail transfer agent (<code>{{ parsed_email.authentication_results_headers[0].authserv_id if parsed_email.authentication_results_headers else 'inbound MTA' }}</code>) at transmission time.
+                        </div>
 
-            <div class="p-3">
-                {% if domain.findings or phishing.indicators %}
-                    <div class="d-flex flex-column gap-3">
-                        <!-- Domain Findings -->
-                        {% for f in domain.findings %}
-                            <div class="finding-item finding-{{ f.severity|lower }}">
-                                <div class="d-flex justify-content-between align-items-center mb-1">
-                                    <strong class="text-dark fs-8">{{ f.title }}</strong>
-                                    <span class="status-badge {% if f.severity in ('CRITICAL', 'HIGH') %}status-badge-danger{% elif f.severity == 'MEDIUM' %}status-badge-warning{% else %}status-badge-neutral{% endif %}">
-                                        {{ f.severity }}
-                                    </span>
-                                </div>
-                                <p class="text-secondary fs-8 mb-2">{{ f.description }}</p>
-                                <div class="p-2 bg-light rounded-1 border font-monospace fs-9 text-dark text-break">
-                                    <strong class="text-muted">Evidence:</strong> {{ f.evidence }}
-                                </div>
-                            </div>
-                        {% endfor %}
-
-                        <!-- Phishing & Content Findings -->
-                        {% for p in phishing.indicators %}
-                            <div class="finding-item finding-{{ p.severity|lower }}">
-                                <div class="d-flex justify-content-between align-items-center mb-1">
-                                    <strong class="text-dark fs-8">{{ p.title }}</strong>
-                                    <span class="status-badge {% if p.severity in ('CRITICAL', 'HIGH') %}status-badge-danger{% elif p.severity == 'MEDIUM' %}status-badge-warning{% else %}status-badge-neutral{% endif %}">
-                                        {{ p.severity }}
-                                    </span>
-                                </div>
-                                <p class="text-secondary fs-8 mb-2">{{ p.explanation }}</p>
-                                <div class="p-2 bg-light rounded-1 border font-monospace fs-9 text-dark">
-                                    <strong class="text-muted">Matched snippet:</strong> "{{ p.matched_text }}"
-                                </div>
-                            </div>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    <div class="p-4 text-center">
-                        <i class="bi bi-shield-check text-success fs-3 d-block mb-2"></i>
-                        <h6 class="fw-bold text-dark mb-1 fs-8">No suspicious indicators detected</h6>
-                        <p class="text-muted fs-9 mb-0">No display-name spoofing, lookalike domains, deceptive hyperlinks, or high-urgency financial lures were found.</p>
-                    </div>
-                {% endif %}
-            </div>
-        </section>
-
-        <!-- 5. Advanced Forensic Details (Headers, DNS & Body) -->
-        <section class="card-enterprise">
-            <div class="accordion accordion-clean" id="advancedEvidenceAccordion">
-                <div class="accordion-item border-0">
-                    <h2 class="accordion-header">
-                        <button class="accordion-button collapsed py-2 px-3" type="button" data-bs-toggle="collapse" data-bs-target="#advancedEvidenceCollapse">
-                            <span class="d-flex align-items-center gap-2">
-                                <i class="bi bi-terminal text-primary"></i>
-                                <span>Advanced Forensic Details (Headers, DNS &amp; Body)</span>
-                            </span>
-                        </button>
-                    </h2>
-                    <div id="advancedEvidenceCollapse" class="accordion-collapse collapse" data-bs-parent="#advancedEvidenceAccordion">
-                        <div class="accordion-body border-top p-3">
-                            
-                            <ul class="nav tabs-enterprise mb-3" id="evidenceTab" role="tablist">
-                                <li class="nav-item">
-                                    <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#headers-pane">RFC 5322 Headers ({{ parsed_email.raw_headers|length }})</button>
-                                </li>
-                                <li class="nav-item">
-                                    <button class="nav-link" data-bs-toggle="pill" data-bs-target="#urls-pane">Hyperlinks ({{ parsed_email.urls_count }})</button>
-                                </li>
-                                <li class="nav-item">
-                                    <button class="nav-link" data-bs-toggle="pill" data-bs-target="#attachments-pane">Attachments ({{ parsed_email.attachments|length }})</button>
-                                </li>
-                                <li class="nav-item">
-                                    <button class="nav-link" data-bs-toggle="pill" data-bs-target="#body-pane">Message Text</button>
-                                </li>
-                            </ul>
-
-                            <div class="tab-content">
-                                <!-- Headers Pane -->
-                                <div class="tab-pane fade show active" id="headers-pane">
-                                    <div class="code-viewer-saas">
-                                        {% for k, v in parsed_email.raw_headers %}
-                                            <div class="mb-1"><span class="text-info">{{ k }}:</span> {{ v }}</div>
-                                        {% endfor %}
+                        <div class="row g-3">
+                            {% if parsed_email.received_spf_parsed %}
+                                {% for spf_rec in parsed_email.received_spf_parsed %}
+                                    <div class="col-md-6">
+                                        <div class="p-3 bg-white border rounded-1 h-100 font-monospace fs-9">
+                                            <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+                                                <strong class="text-dark"><i class="bi bi-hdd-network text-primary me-1"></i> Received-SPF Header</strong>
+                                                <span class="status-badge {% if spf_rec.result == 'PASS' %}status-badge-success{% elif spf_rec.result in ('FAIL', 'PERMERROR') %}status-badge-danger{% else %}status-badge-neutral{% endif %}">
+                                                    {{ spf_rec.result }}
+                                                </span>
+                                            </div>
+                                            {% if spf_rec.client_ip %}<div><span class="text-muted">Client IP:</span> {{ spf_rec.client_ip }}</div>{% endif %}
+                                            {% if spf_rec.envelope_from %}<div><span class="text-muted">Envelope From:</span> {{ spf_rec.envelope_from }}</div>{% endif %}
+                                            {% if spf_rec.comment %}
+                                                <div class="text-muted mt-1 fst-italic">"{{ spf_rec.comment }}"</div>
+                                            {% endif %}
+                                        </div>
                                     </div>
-                                </div>
+                                {% endfor %}
+                            {% endif %}
 
-                                <!-- URLs Pane -->
-                                <div class="tab-pane fade" id="urls-pane">
-                                    {% if parsed_email.urls %}
-                                        <div class="p-2 px-3 bg-light border rounded-1 mb-3 fs-9 text-secondary">
-                                            <i class="bi bi-shield-lock text-primary me-1"></i>
-                                            <strong>Safety Policy:</strong> Hyperlinks are extracted passively for header and domain inspection. MailTrust never automatically executes or sends HTTP requests to target links.
+                            {% if parsed_email.authentication_results_headers %}
+                                {% for ar in parsed_email.authentication_results_headers %}
+                                    <div class="col-md-6">
+                                        <div class="p-3 bg-white border rounded-1 h-100 font-monospace fs-9">
+                                            <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+                                                <strong class="text-dark"><i class="bi bi-shield-check text-primary me-1"></i> Authentication-Results</strong>
+                                                <span class="text-muted fs-9">MTA: {{ ar.authserv_id }}</span>
+                                            </div>
+                                            <div class="d-flex flex-wrap gap-1 mb-2">
+                                                {% for claim in ar.claims %}
+                                                    <span class="badge {% if claim.claimed_result == 'PASS' %}bg-success{% elif claim.claimed_result in ('FAIL', 'PERMERROR') %}bg-danger{% else %}bg-secondary{% endif %} font-monospace fs-9">
+                                                        {{ claim.mechanism }}={{ claim.claimed_result }}
+                                                    </span>
+                                                {% endfor %}
+                                            </div>
+                                            <div class="text-secondary text-break fs-9">
+                                                {{ ar.raw }}
+                                            </div>
                                         </div>
-                                        <div class="table-responsive">
-                                            <table class="table-enterprise font-monospace fs-9">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Hyperlink URL</th>
-                                                        <th>Hostname</th>
-                                                        <th>Category</th>
-                                                        <th>Divergence</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {% for u in parsed_email.urls %}
-                                                        <tr>
-                                                            <td class="text-truncate" style="max-width: 320px;" title="{{ u.url }}">{{ u.url }}</td>
-                                                            <td>{{ u.hostname }}</td>
-                                                            <td>
-                                                                {% if u.is_public_form %}
-                                                                    <span class="status-badge status-badge-warning">Public Form</span>
-                                                                {% else %}
-                                                                    <span class="text-muted">Standard Link</span>
-                                                                {% endif %}
-                                                            </td>
-                                                            <td>
-                                                                {% if u.is_mismatch %}
-                                                                    <span class="status-badge status-badge-danger" title="{{ u.mismatch_reason }}">MISMATCH</span>
-                                                                {% else %}
-                                                                    <span class="text-muted">None</span>
-                                                                {% endif %}
-                                                            </td>
-                                                        </tr>
-                                                    {% endfor %}
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    {% else %}
-                                        <p class="text-muted fs-9 mb-0">No URLs found in email body.</p>
-                                    {% endif %}
-                                </div>
-
-                                <!-- Attachments Pane -->
-                                <div class="tab-pane fade" id="attachments-pane">
-                                    {% if parsed_email.attachments %}
-                                        <div class="table-responsive">
-                                            <table class="table-enterprise font-monospace fs-9">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Filename</th>
-                                                        <th>Size</th>
-                                                        <th>Magic Detected Type</th>
-                                                        <th>Static Findings</th>
-                                                        <th>SHA-256 Fingerprint</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {% for att in parsed_email.attachments %}
-                                                        <tr>
-                                                            <td class="fw-bold text-dark">{{ att.filename }}</td>
-                                                            <td>{{ att.size }} bytes</td>
-                                                            <td>{{ att.magic_detected_type or 'Binary' }}</td>
-                                                            <td>
-                                                                {% if att.has_magic_mismatch %}
-                                                                    <span class="status-badge status-badge-danger">MAGIC MISMATCH</span>
-                                                                {% elif att.has_double_extension %}
-                                                                    <span class="status-badge status-badge-danger">DOUBLE EXTENSION</span>
-                                                                {% elif att.has_embedded_macro %}
-                                                                    <span class="status-badge status-badge-warning">VBA MACRO</span>
-                                                                {% elif att.is_dangerous %}
-                                                                    <span class="status-badge status-badge-danger">DANGEROUS EXT</span>
-                                                                {% else %}
-                                                                    <span class="status-badge status-badge-success">STATIC PASS</span>
-                                                                {% endif %}
-                                                            </td>
-                                                            <td class="text-muted" title="{{ att.sha256 }}">{{ att.sha256[:16] }}...</td>
-                                                        </tr>
-                                                    {% endfor %}
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    {% else %}
-                                        <p class="text-muted fs-9 mb-0">No attachments included in this email message.</p>
-                                    {% endif %}
-                                </div>
-
-                                <!-- Message Text Pane -->
-                                <div class="tab-pane fade" id="body-pane">
-                                    <div class="p-3 bg-light rounded-1 border font-monospace fs-9" style="max-height: 300px; overflow-y: auto;">
-                                        <pre class="mb-0 text-dark" style="white-space: pre-wrap;">{{ parsed_email.text_body or parsed_email.html_body or '(Empty body)' }}</pre>
                                     </div>
-                                </div>
-                            </div>
-
+                                {% endfor %}
+                            {% endif %}
                         </div>
                     </div>
+                </details>
+            {% endif %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- =======================================================================
+         SECTION 4: SECURITY FINDINGS & THREAT ANALYSIS
+         ======================================================================= -->
+    <section class="card-enterprise">
+        <div class="card-enterprise-header d-flex justify-content-between align-items-center py-2 px-3">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-shield-exclamation text-primary"></i>
+                <div>
+                    <h2 class="h6 fw-bold text-dark mb-0">Security Findings &amp; Threat Indicators</h2>
+                    <span class="text-muted fs-9 font-monospace">Heuristic Pattern Detection &amp; Forensic Anomalies</span>
                 </div>
             </div>
-        </section>
+            <div class="d-flex align-items-center gap-2">
+                <span class="text-muted fs-9 font-monospace">{{ domain.findings|length + phishing.indicators|length }} findings identified</span>
+                <span class="text-muted fs-9 font-monospace d-none d-md-inline">&bull; SECTION 4</span>
+            </div>
+        </div>
 
-        </div><!-- End inner flex container -->
-    </div><!-- End Collapsible Detailed Forensics Section -->
+        <div class="p-3">
+            {% if domain.findings or phishing.indicators %}
+                <div class="d-flex flex-column gap-3 mb-3">
+                    <!-- Domain Security Findings -->
+                    {% for f in domain.findings %}
+                        <div class="finding-item finding-{{ f.severity|lower }}">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <strong class="text-dark fs-8">{{ f.title }}</strong>
+                                <span class="status-badge {% if f.severity in ('CRITICAL', 'HIGH') %}status-badge-danger{% elif f.severity == 'MEDIUM' %}status-badge-warning{% else %}status-badge-neutral{% endif %}">
+                                    {{ f.severity }}
+                                </span>
+                            </div>
+                            <p class="text-secondary fs-8 mb-2">{{ f.description }}</p>
+                            <div class="p-2 bg-light rounded-1 border font-monospace fs-9 text-dark text-break">
+                                <strong class="text-muted">Evidence:</strong> {{ f.evidence }}
+                            </div>
+                        </div>
+                    {% endfor %}
+
+                    <!-- Phishing & Content Findings -->
+                    {% for p in phishing.indicators %}
+                        <div class="finding-item finding-{{ p.severity|lower }}">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <strong class="text-dark fs-8">{{ p.title }}</strong>
+                                <span class="status-badge {% if p.severity in ('CRITICAL', 'HIGH') %}status-badge-danger{% elif p.severity == 'MEDIUM' %}status-badge-warning{% else %}status-badge-neutral{% endif %}">
+                                    {{ p.severity }}
+                                </span>
+                            </div>
+                            <p class="text-secondary fs-8 mb-2">{{ p.explanation }}</p>
+                            <div class="p-2 bg-light rounded-1 border font-monospace fs-9 text-dark">
+                                <strong class="text-muted">Matched Snippet:</strong> "{{ p.matched_text }}"
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="p-4 text-center border rounded-1 bg-light mb-3">
+                    <i class="bi bi-shield-check text-success fs-3 d-block mb-2"></i>
+                    <h6 class="fw-bold text-dark mb-1 fs-8">No suspicious indicators detected</h6>
+                    <p class="text-muted fs-9 mb-0">No display-name spoofing, lookalike domains, deceptive hyperlinks, or high-urgency financial lures were found.</p>
+                </div>
+            {% endif %}
+
+            <!-- Expandable Forensics 1: Extracted Hyperlinks -->
+            <details class="enterprise-details mt-3">
+                <summary>
+                    <span><i class="bi bi-link-45deg text-primary me-2"></i> Hyperlinks Passively Extracted ({{ parsed_email.urls_count }})</span>
+                </summary>
+                <div class="details-body">
+                    {% if parsed_email.urls %}
+                        <div class="p-2 px-3 bg-light border rounded-1 mb-3 fs-9 text-secondary">
+                            <i class="bi bi-shield-lock text-primary me-1"></i>
+                            <strong>Safety Policy:</strong> Hyperlinks are extracted passively for header and domain inspection. MailTrust never automatically executes or sends HTTP requests to target links.
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table-enterprise font-monospace fs-9">
+                                <thead>
+                                    <tr>
+                                        <th>Hyperlink URL</th>
+                                        <th>Hostname</th>
+                                        <th>Category</th>
+                                        <th>Divergence</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for u in parsed_email.urls %}
+                                        <tr>
+                                            <td class="text-truncate" style="max-width: 320px;" title="{{ u.url }}">{{ u.url }}</td>
+                                            <td>{{ u.hostname }}</td>
+                                            <td>
+                                                {% if u.is_public_form %}
+                                                    <span class="status-badge status-badge-warning">Public Form</span>
+                                                {% else %}
+                                                    <span class="text-muted">Standard Link</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if u.is_mismatch %}
+                                                    <span class="status-badge status-badge-danger" title="{{ u.mismatch_reason }}">MISMATCH</span>
+                                                {% else %}
+                                                    <span class="text-muted">None</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted fs-9 mb-0">No hyperlinks found in message body.</p>
+                    {% endif %}
+                </div>
+            </details>
+
+            <!-- Expandable Forensics 2: Attachments Static Inspection -->
+            <details class="enterprise-details mt-3">
+                <summary>
+                    <span><i class="bi bi-paperclip text-primary me-2"></i> Attachments Static File Inspection ({{ parsed_email.attachments|length }})</span>
+                </summary>
+                <div class="details-body">
+                    {% if parsed_email.attachments %}
+                        <div class="table-responsive">
+                            <table class="table-enterprise font-monospace fs-9">
+                                <thead>
+                                    <tr>
+                                        <th>Filename</th>
+                                        <th>Size</th>
+                                        <th>Detected Type</th>
+                                        <th>Static Findings</th>
+                                        <th>SHA-256 Fingerprint</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for att in parsed_email.attachments %}
+                                        <tr>
+                                            <td class="fw-bold text-dark">{{ att.filename }}</td>
+                                            <td>{{ att.size }} bytes</td>
+                                            <td>{{ att.magic_detected_type or 'Binary' }}</td>
+                                            <td>
+                                                {% if att.has_magic_mismatch %}
+                                                    <span class="status-badge status-badge-danger">MAGIC MISMATCH</span>
+                                                {% elif att.has_double_extension %}
+                                                    <span class="status-badge status-badge-danger">DOUBLE EXTENSION</span>
+                                                {% elif att.has_embedded_macro %}
+                                                    <span class="status-badge status-badge-warning">VBA MACRO</span>
+                                                {% elif att.is_dangerous %}
+                                                    <span class="status-badge status-badge-danger">DANGEROUS EXT</span>
+                                                {% else %}
+                                                    <span class="status-badge status-badge-success">STATIC PASS</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-muted" title="{{ att.sha256 }}">{{ att.sha256[:16] }}...</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted fs-9 mb-0">No attachments attached to this message.</p>
+                    {% endif %}
+                </div>
+            </details>
+
+            <!-- Expandable Forensics 3: Multi-hop Header Provenance Stack -->
+            {% if provenance and provenance.findings %}
+                <details class="enterprise-details mt-3">
+                    <summary>
+                        <span><i class="bi bi-signpost-split text-primary me-2"></i> Multi-Hop MTA Stack &amp; Envelope Alignment (RFC 8601)</span>
+                    </summary>
+                    <div class="details-body">
+                        <div class="row g-2 mb-3 fs-9 font-monospace">
+                            <div class="col-md-4">
+                                <div class="p-2 bg-light border rounded-1">
+                                    <span class="text-muted">From Domain:</span>
+                                    <div class="fw-bold text-dark">{{ provenance.identity_alignment.from_domain or 'None' }}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-2 bg-light border rounded-1">
+                                    <span class="text-muted">Reply-To Domain:</span>
+                                    <div class="fw-bold {% if not provenance.identity_alignment.reply_to_matches_from %}text-danger{% else %}text-dark{% endif %}">
+                                        {{ provenance.identity_alignment.reply_to_domain or 'Same as From' }}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-2 bg-light border rounded-1">
+                                    <span class="text-muted">Return-Path Domain:</span>
+                                    <div class="fw-bold text-dark">{{ provenance.identity_alignment.return_path_domain or 'None' }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% for pf in provenance.findings %}
+                            <div class="p-2 mb-2 rounded-1 border {% if pf.severity == 'WARNING' %}bg-warning-subtle border-warning-subtle text-warning-emphasis{% else %}bg-light text-secondary{% endif %} fs-8">
+                                <strong>{{ pf.title }}:</strong> {{ pf.details }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </details>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- =======================================================================
+         SECTION 5: FINAL RISK ASSESSMENT
+         ======================================================================= -->
+    <section class="card-enterprise">
+        <div class="card-enterprise-header d-flex justify-content-between align-items-center py-2 px-3">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-graph-up-arrow text-primary"></i>
+                <div>
+                    <h2 class="h6 fw-bold text-dark mb-0">Final Risk Assessment</h2>
+                    <span class="text-muted fs-9 font-monospace">Comprehensive Evaluation &amp; Policy Alignment Matrix</span>
+                </div>
+            </div>
+            <span class="text-muted fs-9 font-monospace d-none d-md-inline">SECTION 5 &bull; RISK ENGINE</span>
+        </div>
+
+        <div class="p-4">
+            <div class="row g-4 align-items-stretch">
+                <!-- Calculated Risk Gauge & Alignment Status -->
+                <div class="col-lg-6 d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="d-flex align-items-baseline gap-2">
+                                <span class="text-muted text-uppercase font-monospace fs-9 fw-semibold">Risk Index:</span>
+                                <span class="h4 fw-bold font-monospace text-dark mb-0">{{ risk.calculated_risk_score }}</span>
+                                <span class="text-muted font-monospace fs-8">/ 100</span>
+                            </div>
+                            <span class="status-badge status-badge-{{ risk.verdict_badge_class }}">
+                                {% if risk.calculated_risk_score == 0 and risk.verdict == 'AUTHENTICATION VERIFIED' %}
+                                    Low Risk
+                                {% elif risk.calculated_risk_score >= 50 %}
+                                    High Risk
+                                {% elif risk.calculated_risk_score > 0 %}
+                                    Medium Risk
+                                {% else %}
+                                    Inconclusive
+                                {% endif %}
+                            </span>
+                        </div>
+
+                        <div class="progress mb-4" style="height: 8px; background-color: var(--border-color); border-radius: var(--radius-xs);">
+                            <div class="progress-bar {% if risk.verdict_badge_class == 'success' %}bg-success{% elif risk.verdict_badge_class == 'warning' %}bg-warning{% elif risk.verdict_badge_class == 'danger' %}bg-danger{% else %}bg-secondary{% endif %}" 
+                                 role="progressbar" 
+                                 style="width: {{ risk.calculated_risk_score }}%;" 
+                                 aria-valuenow="{{ risk.calculated_risk_score }}" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100"></div>
+                        </div>
+
+                        <!-- Policy Alignment Grid -->
+                        <div class="p-3 bg-light rounded-1 border fs-8 text-secondary font-monospace">
+                            <div class="d-flex justify-content-between mb-2 pb-2 border-bottom">
+                                <span>Cryptographic Alignment:</span>
+                                <strong class="{% if risk.is_cryptographically_aligned %}text-success{% else %}text-muted{% endif %}">
+                                    {{ "ALIGNED" if risk.is_cryptographically_aligned else "UNALIGNED" }}
+                                </strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2 pb-2 border-bottom">
+                                <span>DMARC Effective Policy:</span>
+                                <strong class="text-dark">{{ dmarc.effective_policy|upper }}</strong>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>Evaluation Model:</span>
+                                <strong class="text-dark">Deterministic RFC Standards Matrix</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-muted fs-9 mt-3 font-monospace">
+                        <i class="bi bi-shield-lock text-primary me-1"></i> Passively evaluated &bull; No outbound tracking or stochastic AI hallucination
+                    </div>
+                </div>
+
+                <!-- Final Forensic Conclusion -->
+                <div class="col-lg-6 border-start-lg ps-lg-4 d-flex flex-column justify-content-between">
+                    <div>
+                        <span class="text-muted text-uppercase font-monospace fs-9 fw-semibold d-block mb-2">Final Forensic Disposition</span>
+                        <div class="p-3 border rounded-1 bg-white fs-8 mb-3">
+                            {% if risk.verdict == 'AUTHENTICATION VERIFIED' %}
+                                <div class="d-flex align-items-center gap-2 mb-2 text-success fw-bold">
+                                    <i class="bi bi-check-circle-fill"></i> SENDER AUTHENTICITY CONFIRMED
+                                </div>
+                                <p class="text-secondary mb-0">
+                                    The email passed asymmetric cryptographic signature verification (DKIM) with proper alignment to the visible author domain. Transmission indicators show no signs of sender address forgery.
+                                </p>
+                            {% elif risk.verdict == 'SUSPICIOUS' %}
+                                <div class="d-flex align-items-center gap-2 mb-2 text-warning fw-bold">
+                                    <i class="bi bi-exclamation-triangle-fill"></i> IDENTITY ANOMALIES OBSERVED
+                                </div>
+                                <p class="text-secondary mb-0">
+                                    The message exhibited identity divergence, unaligned authentication domains, or heuristic suspicion. Exercise heightened vigilance before interacting with hyperlinks or embedded requests.
+                                </p>
+                            {% elif risk.verdict == 'HIGH RISK' %}
+                                <div class="d-flex align-items-center gap-2 mb-2 text-danger fw-bold">
+                                    <i class="bi bi-x-octagon-fill"></i> FRAUDULENT OR COMPROMISED TRANSMISSION
+                                </div>
+                                <p class="text-secondary mb-0">
+                                    Cryptographic verification failed or explicit spoofing patterns were identified. Treat this communication as untrusted and potentially malicious.
+                                </p>
+                            {% else %}
+                                <div class="d-flex align-items-center gap-2 mb-2 text-secondary fw-bold">
+                                    <i class="bi bi-question-circle-fill"></i> UNVERIFIED SENDER IDENTITY
+                                </div>
+                                <p class="text-secondary mb-0">
+                                    Neither DKIM signatures nor DMARC policies are published for this sender domain. Authenticity cannot be cryptographically proven.
+                                </p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Report Verification Footer -->
+                    <div class="d-flex justify-content-between align-items-center pt-2 border-top fs-9 font-monospace text-muted">
+                        <span>Report Integrity: Ed25519 Signable</span>
+                        <a href="{{ url_for('methodology') }}" class="text-decoration-none text-primary">
+                            CNS Methodology Reference &rarr;
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Expandable Raw Forensic Artifacts -->
+            <div class="mt-4 pt-3 border-top">
+                <details class="enterprise-details">
+                    <summary>
+                        <span><i class="bi bi-terminal text-primary me-2"></i> RFC 5322 Raw MIME Headers ({{ parsed_email.raw_headers|length }})</span>
+                    </summary>
+                    <div class="details-body p-0">
+                        <div class="code-viewer-saas mb-0 border-0 rounded-0" style="max-height: 400px;">
+                            {% for k, v in parsed_email.raw_headers %}
+                                <div class="mb-1"><span class="text-info">{{ k }}:</span> {{ v }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </details>
+
+                <details class="enterprise-details mt-3">
+                    <summary>
+                        <span><i class="bi bi-file-earmark-text text-primary me-2"></i> Decoded Message Content</span>
+                    </summary>
+                    <div class="details-body">
+                        <div class="p-3 bg-light rounded-1 border font-monospace fs-9" style="max-height: 320px; overflow-y: auto;">
+                            <pre class="mb-0 text-dark" style="white-space: pre-wrap;">{{ parsed_email.text_body or parsed_email.html_body or '(Empty message body)' }}</pre>
+                        </div>
+                    </div>
+                </details>
+            </div>
+        </div>
+    </section>
 
 </div>
-{% endblock %}
-
-{% block scripts %}
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        var collapseEl = document.getElementById('detailedForensicsCollapse');
-        var btnText = document.getElementById('forensicsBtnText');
-        var chevron = document.getElementById('forensicsChevron');
-        if (collapseEl && btnText && chevron) {
-            collapseEl.addEventListener('show.bs.collapse', function () {
-                btnText.textContent = 'Hide More Details';
-                chevron.classList.remove('bi-chevron-down');
-                chevron.classList.add('bi-chevron-up');
-            });
-            collapseEl.addEventListener('hide.bs.collapse', function () {
-                btnText.textContent = 'View More Technical Details';
-                chevron.classList.remove('bi-chevron-up');
-                chevron.classList.add('bi-chevron-down');
-            });
-        }
-    });
-</script>
 {% endblock %}
