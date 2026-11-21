@@ -69,17 +69,13 @@
                                     {% elif risk.verdict == 'SUSPICIOUS' %}
                                         <strong class="text-dark">Caution advised:</strong> Discrepancies detected (such as brand claim inconsistency or public cloud form). Verify sender before trusting links.
                                     {% elif risk.verdict == 'HIGH RISK' %}
-                                        <strong class="text-dark">High threat:</strong> Active domain spoofing, failed cryptographic signatures, or malicious indicators detected. Do not click links or execute attachments.
+                                        <strong class="text-dark">High threat:</strong> Active domain spoofing, failed cryptographic signatures, or malicious indicators detected.
                                     {% else %}
                                         <strong class="text-dark">Unverified origin:</strong> The sender domain has not published cryptographic (DKIM) or policy (DMARC) records.
                                     {% endif %}
                                 </div>
                             </div>
                         </div>
-
-                        <p class="text-secondary fs-8 mb-3 leading-relaxed">
-                            {{ risk.cns_explanation }}
-                        </p>
 
                         <!-- Key Forensic Evidence -->
                         {% if risk.verdict_reasons %}
@@ -96,17 +92,11 @@
                         {% endif %}
                     </div>
 
-                    <!-- Defensive Recommendation & Signed Evidence Export -->
-                    <div class="pt-2 border-top d-flex flex-wrap justify-content-between align-items-center gap-2 text-secondary fs-8">
-                        <div>
-                            {% if risk.recommended_actions %}
-                                <strong class="text-dark">Recommended next step:</strong>
-                                <span>{{ risk.recommended_actions[0] }}</span>
-                            {% endif %}
-                        </div>
+                    <!-- Signed Evidence Export -->
+                    <div class="pt-2 border-top d-flex justify-content-end align-items-center gap-2">
                         <form method="POST" action="{{ url_for('api_export_signed_report') }}">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                            <button type="submit" class="btn btn-sm btn-outline-primary font-monospace fs-9 py-1 px-2">
+                            <button type="submit" class="btn btn-sm btn-outline-primary font-monospace fs-9 py-1 px-3">
                                 <i class="bi bi-file-earmark-lock2 me-1"></i> Export Signed Evidence (Ed25519)
                             </button>
                         </form>
@@ -243,15 +233,17 @@
             </div>
 
             <!-- Toggle Button for Full Technical Details -->
-            <button class="btn-enterprise-outline btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#detailedForensicsCollapse" aria-expanded="false" id="toggleForensicsBtn">
-                <i class="bi bi-chevron-down" id="forensicsChevron"></i>
-                <span id="forensicsBtnText">View Technical Details &amp; Full Evidence</span>
+            <button class="btn btn-sm btn-outline-primary fw-semibold px-3 py-1" type="button" data-bs-toggle="collapse" data-bs-target="#detailedForensicsCollapse" aria-expanded="false" id="toggleForensicsBtn">
+                <i class="bi bi-layout-text-sidebar-reverse me-1"></i>
+                <span id="forensicsBtnText">View More Technical Details</span>
+                <i class="bi bi-chevron-down ms-1" id="forensicsChevron"></i>
             </button>
         </div>
     </section>
 
-    <!-- Collapsible Detailed Forensics Section -->
-    <div class="collapse d-flex flex-column gap-4" id="detailedForensicsCollapse">
+    <!-- Collapsible Detailed Forensics Section (Hidden by default) -->
+    <div class="collapse" id="detailedForensicsCollapse">
+        <div class="d-flex flex-column gap-4 pt-3">
 
         <!-- 3. Authentication Triad Cards (DKIM, SPF, DMARC) -->
         <section>
@@ -539,19 +531,19 @@
                 <div class="d-flex align-items-center gap-2">
                     <i class="bi bi-cpu text-primary"></i>
                     <div>
-                        <h2 class="h6 fw-bold text-dark mb-0">Cryptographic Hygiene &amp; Key Strength Audit</h2>
+                        <h2 class="h6 fw-bold text-dark mb-0">Cryptographic Key Strength Audit</h2>
                         <span class="text-muted fs-9 font-monospace">NIST SP 800-57, RFC 6376, RFC 8301 &amp; RFC 8463 Standards</span>
                     </div>
                 </div>
                 <span class="status-badge {% if hygiene.status == 'PASS' %}status-badge-success{% elif hygiene.status == 'WARNING' %}status-badge-warning{% else %}status-badge-danger{% endif %}">
                     <span class="status-dot {% if hygiene.status == 'PASS' %}status-dot-success{% elif hygiene.status == 'WARNING' %}status-dot-warning{% else %}status-dot-danger{% endif %}"></span>
-                    HYGIENE: {{ hygiene.status }}
+                    KEY STATUS: {{ hygiene.status }}
                 </span>
             </div>
 
             <div class="p-3">
                 <div class="row g-3 mb-3">
-                    <div class="col-sm-6 col-lg-3">
+                    <div class="col-sm-4 col-4">
                         <div class="p-2 bg-light border rounded text-center">
                             <div class="text-muted fs-9 text-uppercase">Key Bit Length</div>
                             <div class="fw-bold font-monospace fs-7 {% if hygiene.key_size and hygiene.key_size < 1024 %}text-danger{% elif hygiene.key_size and hygiene.key_size < 2048 %}text-warning{% else %}text-success{% endif %}">
@@ -559,7 +551,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-sm-6 col-lg-3">
+                    <div class="col-sm-4 col-4">
                         <div class="p-2 bg-light border rounded text-center">
                             <div class="text-muted fs-9 text-uppercase">Hash Algorithm</div>
                             <div class="fw-bold font-monospace fs-7 {% if 'sha1' in (hygiene.algorithm or '') %}text-danger{% else %}text-dark{% endif %}">
@@ -567,37 +559,38 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-sm-6 col-lg-3">
+                    <div class="col-sm-4 col-4">
                         <div class="p-2 bg-light border rounded text-center">
                             <div class="text-muted fs-9 text-uppercase">Key Type</div>
                             <div class="fw-bold font-monospace fs-7 text-dark">{{ hygiene.key_type|upper or 'RSA' }}</div>
                         </div>
                     </div>
-                    <div class="col-sm-6 col-lg-3">
-                        <div class="p-2 bg-light border rounded text-center">
-                            <div class="text-muted fs-9 text-uppercase">Hygiene Score Penalty</div>
-                            <div class="fw-bold font-monospace fs-7 {% if hygiene.score_penalty > 0 %}text-danger{% else %}text-success{% endif %}">
-                                -{{ hygiene.score_penalty }} pts
-                            </div>
-                        </div>
-                    </div>
                 </div>
 
                 {% if hygiene.findings %}
-                    <div class="d-flex flex-column gap-2">
-                        {% for hf in hygiene.findings %}
-                            <div class="p-3 border rounded {% if hf.severity in ('CRITICAL', 'HIGH') %}bg-danger-subtle border-danger-subtle text-danger-emphasis{% elif hf.severity == 'WARNING' %}bg-warning-subtle border-warning-subtle text-warning-emphasis{% elif hf.severity == 'PASS' %}bg-light border-light-subtle text-dark{% else %}bg-light text-secondary{% endif %} fs-8">
-                                <div class="d-flex justify-content-between align-items-center mb-1">
-                                    <strong class="fw-bold">{{ hf.title }}</strong>
-                                    <span class="badge {% if hf.severity in ('CRITICAL', 'HIGH') %}bg-danger text-white{% elif hf.severity == 'WARNING' %}bg-warning text-dark{% elif hf.severity == 'PASS' %}bg-success text-white{% else %}bg-secondary text-white{% endif %} font-monospace fs-9">
-                                        {{ hf.severity }}
-                                    </span>
-                                </div>
-                                <div class="mb-1">{{ hf.explanation }}</div>
-                                <div class="font-monospace fs-9 text-muted mb-1">Evidence: {{ hf.evidence }}</div>
-                                <div class="fs-9 fst-italic">Recommendation: {{ hf.recommendation }}</div>
-                            </div>
-                        {% endfor %}
+                    <div class="table-responsive border rounded-1">
+                        <table class="table table-sm table-hover mb-0 font-monospace fs-9 align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Security Parameter</th>
+                                    <th>Observed Configuration</th>
+                                    <th class="text-end">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for hf in hygiene.findings %}
+                                    <tr>
+                                        <td class="fw-semibold text-dark">{{ hf.title }}</td>
+                                        <td class="text-secondary text-truncate" style="max-width: 420px;" title="{{ hf.evidence }}">{{ hf.evidence }}</td>
+                                        <td class="text-end">
+                                            <span class="badge {% if hf.severity in ('CRITICAL', 'HIGH') %}bg-danger{% elif hf.severity == 'WARNING' %}bg-warning text-dark{% else %}bg-success{% endif %}">
+                                                {{ hf.severity }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
                 {% endif %}
             </div>
@@ -664,8 +657,8 @@
             </div>
 
             <div class="p-3">
-                <div class="p-3 bg-light border rounded-1 mb-3 fs-8 text-secondary">
-                    <strong class="text-dark">Reported Evidence vs. Independent Verification:</strong> The evidence below was recorded by receiving mail transfer agents (e.g. <code>{{ parsed_email.authentication_results_headers[0].authserv_id if parsed_email.authentication_results_headers else 'inbound MTA' }}</code>) at transmission time. MailTrust preserves this as reported delivery context, distinct from MailTrust's independent offline cryptographic verification.
+                <div class="p-2 px-3 bg-light border rounded-1 mb-3 fs-9 text-secondary font-monospace">
+                    <i class="bi bi-info-circle text-primary me-1"></i> Inbound delivery headers recorded by receiving MTA (<code>{{ parsed_email.authentication_results_headers[0].authserv_id if parsed_email.authentication_results_headers else 'inbound MTA' }}</code>) at transmission time.
                 </div>
 
                 <div class="row g-3">
@@ -912,6 +905,7 @@
             </div>
         </section>
 
+        </div><!-- End inner flex container -->
     </div><!-- End Collapsible Detailed Forensics Section -->
 
 </div>
@@ -925,12 +919,12 @@
         var chevron = document.getElementById('forensicsChevron');
         if (collapseEl && btnText && chevron) {
             collapseEl.addEventListener('show.bs.collapse', function () {
-                btnText.textContent = 'Hide Technical Details & Evidence';
+                btnText.textContent = 'Hide More Details';
                 chevron.classList.remove('bi-chevron-down');
                 chevron.classList.add('bi-chevron-up');
             });
             collapseEl.addEventListener('hide.bs.collapse', function () {
-                btnText.textContent = 'View Technical Details & Full Evidence';
+                btnText.textContent = 'View More Technical Details';
                 chevron.classList.remove('bi-chevron-up');
                 chevron.classList.add('bi-chevron-down');
             });
