@@ -307,10 +307,10 @@ def index():
 
 @app.route("/workbench")
 @app.route("/scan")
-@login_required
 def workbench():
     """
-    Step 3: Main operation of email scan (Message Inspection Workbench).
+    Message Inspection Workbench.
+    Available to authenticated users and guests for stateless email scans.
     """
     recent_analyses = session.get("recent_analyses", [])
     

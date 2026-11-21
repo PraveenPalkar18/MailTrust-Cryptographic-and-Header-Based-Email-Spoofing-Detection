@@ -45,6 +45,18 @@
                     </div>
                 </form>
 
+                <div class="d-flex align-items-center my-3 text-secondary">
+                    <hr class="flex-grow-1 my-0">
+                    <span class="px-2 fs-9 text-uppercase text-muted fw-semibold">Or</span>
+                    <hr class="flex-grow-1 my-0">
+                </div>
+
+                <div>
+                    <a href="{{ url_for('workbench') }}" class="btn btn-outline-secondary w-100 py-2 fs-8 fw-semibold">
+                        <i class="bi bi-shield-check me-1 text-primary"></i> Continue as Guest (Stateless Email Scan)
+                    </a>
+                </div>
+
                 <div class="text-center mt-4 fs-8 text-secondary">
                     Don't have an account? <a href="{{ url_for('register') }}" class="fw-semibold text-primary">Register here</a>
                 </div>
