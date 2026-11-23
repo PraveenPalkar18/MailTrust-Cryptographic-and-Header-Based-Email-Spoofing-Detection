@@ -151,16 +151,10 @@
                                     {{ spf.status }}
                                 </strong>
                             </div>
-                            <div class="d-flex justify-content-between mb-1">
+                            <div class="d-flex justify-content-between">
                                 <span>DMARC:</span>
                                 <strong class="{% if dmarc.status == 'PASS' %}text-success{% elif dmarc.status == 'FAIL' %}text-danger{% else %}text-muted{% endif %}">
                                     {{ dmarc.status }}
-                                </strong>
-                            </div>
-                            <div class="d-flex justify-content-between">
-                                <span>S/MIME:</span>
-                                <strong class="{% if smime and smime.status == 'VALID' %}text-success{% elif smime and smime.status in ('INVALID', 'EXPIRED_CERTIFICATE') %}text-danger{% else %}text-muted{% endif %}">
-                                    {{ smime.status if smime else 'NONE' }}
                                 </strong>
                             </div>
                         </div>
@@ -205,20 +199,20 @@
     </section>
 
     <!-- =======================================================================
-         SECTION 2: CORE AUTHENTICATION (DKIM, SPF, DMARC, S/MIME)
+         SECTION 2: CORE AUTHENTICATION (DKIM, SPF, DMARC)
          ======================================================================= -->
     <section>
         <div class="d-flex justify-content-between align-items-center mb-3">
             <div>
                 <h2 class="h6 fw-bold text-dark mb-0">Core Email Authentication Protocols</h2>
-                <span class="text-muted fs-9 font-monospace">Independent Cryptographic Verification (RFC 6376, RFC 7208, RFC 7489, RFC 8551)</span>
+                <span class="text-muted fs-9 font-monospace">Independent Cryptographic Verification (RFC 6376, RFC 7208, RFC 7489)</span>
             </div>
-            <span class="text-muted fs-9 font-monospace d-none d-sm-inline">SECTION 2 &bull; AUTHENTICATION TRIAD &amp; S/MIME</span>
+            <span class="text-muted fs-9 font-monospace d-none d-sm-inline">SECTION 2 &bull; AUTHENTICATION TRIAD</span>
         </div>
 
         <div class="row g-3">
             <!-- DKIM Card -->
-            <div class="col-lg-3 col-md-6">
+            <div class="col-lg-4 col-md-6">
                 <div class="card-enterprise h-100 d-flex flex-column justify-content-between">
                     <div>
                         <div class="card-enterprise-header d-flex justify-content-between align-items-center">
@@ -296,7 +290,7 @@
             </div>
 
             <!-- SPF Card -->
-            <div class="col-lg-3 col-md-6">
+            <div class="col-lg-4 col-md-6">
                 <div class="card-enterprise h-100 d-flex flex-column justify-content-between">
                     <div>
                         <div class="card-enterprise-header d-flex justify-content-between align-items-center">
@@ -362,7 +356,7 @@
             </div>
 
             <!-- DMARC Card -->
-            <div class="col-lg-3 col-md-6">
+            <div class="col-lg-4 col-md-12">
                 <div class="card-enterprise h-100 d-flex flex-column justify-content-between">
                     <div>
                         <div class="card-enterprise-header d-flex justify-content-between align-items-center">
@@ -431,87 +425,7 @@
                 </div>
             </div>
 
-            <!-- S/MIME Card -->
-            <div class="col-lg-3 col-md-6">
-                <div class="card-enterprise h-100 d-flex flex-column justify-content-between">
-                    <div>
-                        <div class="card-enterprise-header d-flex justify-content-between align-items-center">
-                            <strong class="text-dark fs-8">S/MIME Signature</strong>
-                            <span class="status-badge {% if smime and smime.status == 'VALID' %}status-badge-success{% elif smime and smime.status in ('INVALID', 'EXPIRED_CERTIFICATE') %}status-badge-danger{% elif smime and smime.status == 'NOT_PRESENT' %}status-badge-neutral{% else %}status-badge-warning{% endif %}">
-                                <span class="status-dot {% if smime and smime.status == 'VALID' %}status-dot-success{% elif smime and smime.status in ('INVALID', 'EXPIRED_CERTIFICATE') %}status-dot-danger{% elif smime and smime.status == 'NOT_PRESENT' %}status-dot-neutral{% else %}status-dot-warning{% endif %}"></span>
-                                {% if not smime or smime.status == 'NOT_PRESENT' %}None Present{% else %}{{ smime.status }}{% endif %}
-                            </span>
-                        </div>
-                        <div class="p-3">
-                            <p class="text-secondary fs-8 mb-3">
-                                {% if smime and smime.status == 'VALID' %}
-                                    Cryptographic X.509 signature verified. Message content is unaltered and signer certificate matches From.
-                                {% elif smime and smime.status == 'INVALID' %}
-                                    Mathematical signature verification failed. Message body or CMS envelope corrupted.
-                                {% elif smime and smime.status == 'EXPIRED_CERTIFICATE' %}
-                                    Mathematical signature valid, but signer's X.509 certificate has expired.
-                                {% elif smime and smime.status == 'ENCRYPTED_NOT_ANALYZABLE' %}
-                                    Message is S/MIME encrypted (enveloped-data). Decryption key required.
-                                {% elif not smime or smime.status == 'NOT_PRESENT' %}
-                                    No S/MIME CMS envelope was attached to this MIME payload.
-                                {% else %}
-                                    {{ smime.summary }}
-                                {% endif %}
-                            </p>
 
-                            <div class="p-2 bg-light rounded-1 border font-monospace fs-9 text-secondary mb-2">
-                                <div class="d-flex justify-content-between mb-1">
-                                    <span class="text-muted">Signer:</span>
-                                    <strong class="text-dark text-truncate ms-1" style="max-width: 140px;">{{ smime.signer_email if smime and smime.signer_email else 'None' }}</strong>
-                                </div>
-                                <div class="d-flex justify-content-between">
-                                    <span class="text-muted">Standard:</span>
-                                    <strong class="text-dark">RFC 8551</strong>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Expandable Technical Details -->
-                    <div class="p-3 pt-0">
-                        {% if smime and smime.is_smime %}
-                            <details class="spec-details">
-                                <summary>Technical Details</summary>
-                                <table class="table-spec mt-2">
-                                    <tbody>
-                                        <tr>
-                                            <td class="spec-key">Type</td>
-                                            <td class="spec-val">{{ smime.smime_type }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="spec-key">Signer Email</td>
-                                            <td class="spec-val text-break">{{ smime.signer_email or '(None)' }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="spec-key">Common Name</td>
-                                            <td class="spec-val">{{ smime.signer_common_name or '(None)' }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="spec-key">Key Spec</td>
-                                            <td class="spec-val">{{ smime.public_key_type }} ({{ smime.public_key_size }} bits)</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="spec-key">Valid Window</td>
-                                            <td class="spec-val fs-9">{{ smime.valid_from[:10] }} to {{ smime.valid_to[:10] }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="spec-key">From Match</td>
-                                            <td class="spec-val">{{ "YES" if smime.identity_matches_from else "NO" }}</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </details>
-                        {% else %}
-                            <span class="text-muted fs-9 font-monospace">CMS Detached &bull; RFC 8551</span>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
         </div>
     </section>
 
