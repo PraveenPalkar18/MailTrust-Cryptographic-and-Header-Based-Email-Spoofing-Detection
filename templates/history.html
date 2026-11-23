@@ -8,8 +8,8 @@
     <!-- Page Header & Action Bar -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
         <div>
-            <h1 class="h5 fw-bold text-dark mb-1 tracking-tight">Session Scan History</h1>
-            <p class="text-secondary fs-8 mb-0">Record of RFC email authenticity evaluations executed during this browser session.</p>
+            <h1 class="h5 fw-bold text-dark mb-1 tracking-tight">{% if current_user %}Personal Forensic Scan History{% else %}Session Scan History{% endif %}</h1>
+            <p class="text-secondary fs-8 mb-0">Record of RFC email authenticity evaluations executed during this browser session{% if current_user %} and authenticated scans{% endif %}.</p>
         </div>
         {% if history %}
             <form action="{{ url_for('clear_history') }}" method="POST" onsubmit="return confirm('Clear all analysis history for this session?');">
@@ -20,11 +20,15 @@
         {% endif %}
     </div>
 
-    <!-- Privacy Banner -->
+    <!-- Privacy & Persistence Banner -->
     <div class="p-3 bg-light border rounded-1 fs-8 text-secondary d-flex align-items-center gap-2">
         <i class="bi bi-shield-check text-primary fs-6"></i>
         <div>
-            <strong class="text-dark">Zero Persistent Storage:</strong> Analysis history is maintained exclusively in ephemeral session memory. Raw message bytes and header payloads are never written to disk or shared with external analytics.
+            {% if current_user %}
+                <strong class="text-dark">Persistent Forensic Storage:</strong> Your personal scan history is cryptographically logged and synchronized with MongoDB Atlas.
+            {% else %}
+                <strong class="text-dark">Zero Persistent Storage:</strong> Analysis history is maintained exclusively in ephemeral session memory. Raw message bytes and header payloads are never written to disk or shared with external analytics.
+            {% endif %}
         </div>
     </div>
 

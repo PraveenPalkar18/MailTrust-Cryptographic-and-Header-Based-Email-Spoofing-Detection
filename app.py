@@ -642,9 +642,44 @@ def api_lab_verify():
 
 @app.route("/history")
 def history():
-    """Scan history page for session analyses."""
-    recent_analyses = session.get("recent_analyses", [])
-    return render_template("history.html", history=recent_analyses)
+    """Scan history page for session analyses and authenticated user records."""
+    history_items = []
+
+    # 1. If user is authenticated, retrieve persistent analysis records from database
+    if g.get("current_user"):
+        with get_db() as db:
+            if g.current_user.role == "ADMIN":
+                records = db.query(AnalysisRecord).order_by(AnalysisRecord.created_at.desc()).limit(100).all()
+            else:
+                records = db.query(AnalysisRecord).filter_by(user_id=g.current_user.id).order_by(AnalysisRecord.created_at.desc()).all()
+
+            for rec in records:
+                ts_str = rec.created_at.strftime("%Y-%m-%d %H:%M") if rec.created_at else ""
+                history_items.append({
+                    "id": rec.id,
+                    "report_id": rec.report_id,
+                    "subject": rec.subject_preview or "(No Subject)",
+                    "from": rec.from_address or rec.sender_domain or "(Unknown)",
+                    "verdict": rec.verdict,
+                    "badge_class": rec.verdict_badge_class,
+                    "risk_score": rec.risk_score,
+                    "timestamp": ts_str,
+                    "dkim_status": rec.dkim_status,
+                    "spf_status": rec.spf_status,
+                    "dmarc_status": rec.dmarc_status,
+                    "smime_status": rec.smime_status,
+                    "file_sha256": rec.file_sha256,
+                    "is_persistent": True
+                })
+
+    # 2. Append/merge ephemeral session analyses (for guests or recent scans)
+    session_analyses = session.get("recent_analyses", [])
+    if session_analyses:
+        for sa in session_analyses:
+            if not any(h.get("subject") == sa.get("subject") and h.get("from") == sa.get("from") for h in history_items):
+                history_items.append(sa)
+
+    return render_template("history.html", history=history_items)
 
 
 @app.route("/history/clear", methods=["POST"])
