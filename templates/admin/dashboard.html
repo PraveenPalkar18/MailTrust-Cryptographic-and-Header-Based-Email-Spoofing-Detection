@@ -77,68 +77,6 @@
         </div>
     </div>
 
-    <!-- Cryptographic Audit Chain Integrity Status -->
-    <div class="col-12">
-        <div class="card card-enterprise">
-            <div class="card-enterprise-header d-flex justify-content-between align-items-center py-3 px-4 border-bottom">
-                <div class="d-flex align-items-center gap-2">
-                    <i class="bi bi-shield-check text-primary"></i>
-                    <h6 class="fw-bold text-dark mb-0">Audit Log Hash Chain Cryptographic Integrity</h6>
-                </div>
-                {% if chain_verification.is_valid %}
-                    <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 fs-8">
-                        <i class="bi bi-check-circle-fill me-1"></i> CHAIN INTACT &amp; VERIFIED
-                    </span>
-                {% else %}
-                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-2 fs-8">
-                        <i class="bi bi-exclamation-triangle-fill me-1"></i> INTEGRITY TAMPERING DETECTED
-                    </span>
-                {% endif %}
-            </div>
-            <div class="card-body p-4">
-                {% if chain_verification.is_valid %}
-                    <div class="alert alert-success border d-flex align-items-center gap-3 mb-3 p-3 fs-8">
-                        <i class="bi bi-check-circle-fill fs-4 text-success"></i>
-                        <div>
-                            <strong>Deterministic Hash Chain Valid:</strong> All {{ chain_verification.total_records }} events in the database maintain unbroken SHA-256 link continuity ($H_i = \text{SHA256}(\text{CanonicalEvent}_i \mathbin{\Vert} H_{i-1})$). No modified, deleted, or reordered records were detected.
-                        </div>
-                    </div>
-                {% else %}
-                    <div class="alert alert-danger border mb-3 p-3 fs-8">
-                        <h6 class="fw-bold text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i>Tamper Detection Alert!</h6>
-                        <p class="mb-2">The cryptographic hash chain failed verification with {{ chain_verification.errors | length }} error(s):</p>
-                        <ul class="mb-0 fs-9 font-monospace">
-                            {% for err in chain_verification.errors %}
-                                <li>[Seq #{{ err.sequence_num }}] {{ err.error_type }}: {{ err.details }}</li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                {% endif %}
 
-                <div class="row g-3 fs-8 pt-2">
-                    <div class="col-12 col-md-6">
-                        <span class="text-muted fw-semibold">Current Chain Tip Hash:</span>
-                        <div class="font-monospace fs-9 text-break text-dark bg-light p-2 rounded border mt-1">{{ chain_verification.last_hash }}</div>
-                    </div>
-                    <div class="col-12 col-md-6">
-                        <span class="text-muted fw-semibold">Last Recorded Action:</span>
-                        <div class="fs-8 text-dark bg-light p-2 rounded border mt-1">
-                            {% if latest_audit %}
-                                <strong>{{ latest_audit.action }}</strong> by <span class="font-monospace">{{ latest_audit.actor_id }}</span> ({{ latest_audit.timestamp_utc }})
-                            {% else %}
-                                No events recorded yet.
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-
-                <div class="d-flex justify-content-end gap-2 mt-3">
-                    <a href="{{ url_for('admin_audit') }}" class="btn btn-sm btn-primary btn-enterprise">
-                        <i class="bi bi-eye me-1"></i> Inspect Full Audit Ledger
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
 {% endblock %}
